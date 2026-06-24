@@ -1,1 +1,447 @@
-<!DOCTYPE html>\n<html lang=\"ar\" dir=\"rtl\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>آدميتي V36.0 | Clean Architecture Edition</title>\n    <style>\n        :root {\n            --primary: #00ff88;\n            --secondary: #ff0066;\n            --tertiary: #ffaa00;\n            --conscious: #00aaff;\n            --bg: #0a0a0f;\n            --panel: #12121f;\n            --text: #e0e0e0;\n            --dim: #666;\n            --border: #2a2a3a;\n            --container: #161625;\n            --success: #00ff88;\n            --warning: #ffaa00;\n            --error: #ff0066;\n        }\n\n        * {\n            margin: 0;\n            padding: 0;\n            box-sizing: border-box;\n        }\n\n        body {\n            font-family: 'Segoe UI', system-ui, sans-serif;\n            background: var(--bg);\n            color: var(--text);\n            height: 100vh;\n            overflow: hidden;\n        }\n\n        #app {\n            display: grid;\n            grid-template-columns: 1fr 380px;\n            grid-template-rows: 60px 1fr auto;\n            height: 100vh;\n        }\n\n        header {\n            grid-column: 1/-1;\n            background: linear-gradient(90deg, #050508, var(--panel));\n            border-bottom: 2px solid var(--primary);\n            display: flex;\n            align-items: center;\n            padding: 0 25px;\n            justify-content: space-between;\n            z-index: 100;\n        }\n\n        .logo {\n            font-weight: bold;\n            font-size: 1.3rem;\n            color: var(--primary);\n            text-shadow: 0 0 15px var(--primary);\n        }\n\n        .logo small {\n            font-size: 0.7rem;\n            color: var(--dim);\n            margin-right: 10px;\n        }\n\n        .status-indicator {\n            width: 10px;\n            height: 10px;\n            border-radius: 50%;\n            background: #ffaa00;\n            display: inline-block;\n            margin-left: 8px;\n            animation: pulse 2s infinite;\n        }\n\n        .status-indicator.online {\n            background: #00ff88;\n        }\n\n        @keyframes pulse {\n            0%, 100% { opacity: 1; }\n            50% { opacity: 0.5; }\n        }\n\n        .btn {\n            background: transparent;\n            border: 1px solid #444;\n            color: #ccc;\n            padding: 8px 20px;\n            border-radius: 30px;\n            cursor: pointer;\n            font-size: 0.85rem;\n            transition: all 0.2s;\n        }\n\n        .btn:hover {\n            border-color: var(--primary);\n            color: var(--primary);\n            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);\n        }\n\n        .btn.primary {\n            border-color: var(--primary);\n            color: var(--primary);\n        }\n\n        .btn.danger {\n            border-color: var(--error);\n            color: var(--error);\n        }\n\n        #mirror {\n            grid-column: 1;\n            grid-row: 2;\n            background: #0d0d1a;\n            border: none;\n            width: 100%;\n            height: 100%;\n            overflow-y: auto;\n        }\n\n        #panel {\n            grid-column: 2;\n            grid-row: 2;\n            background: #050508;\n            border-right: 1px solid var(--border);\n            padding: 16px;\n            display: flex;\n            flex-direction: column;\n            gap: 12px;\n            overflow-y: auto;\n        }\n\n        .section {\n            background: var(--container);\n            border: 1px solid var(--border);\n            border-radius: 12px;\n            padding: 12px;\n            display: flex;\n            flex-direction: column;\n            gap: 8px;\n        }\n\n        .section h3 {\n            font-size: 0.8rem;\n            color: var(--primary);\n            margin-bottom: 4px;\n            border-bottom: 1px solid #2a2a3a;\n            padding-bottom: 6px;\n        }\n\n        .item {\n            background: var(--panel);\n            border: 1px solid #2a2a3a;\n            border-radius: 8px;\n            padding: 10px;\n            font-size: 0.75rem;\n            cursor: pointer;\n            transition: all 0.2s;\n            display: flex;\n            align-items: center;\n            gap: 8px;\n        }\n\n        .item:hover {\n            border-color: var(--conscious);\n            box-shadow: 0 0 10px rgba(0, 170, 255, 0.2);\n        }\n\n        .item.selected {\n            border-color: var(--primary);\n            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);\n            background: rgba(0, 255, 136, 0.1);\n        }\n\n        .item-icon {\n            font-size: 1rem;\n        }\n\n        .item-name {\n            font-weight: bold;\n            color: var(--text);\n        }\n\n        .item-status {\n            width: 6px;\n            height: 6px;\n            border-radius: 50%;\n            background: #00ff88;\n            margin-left: auto;\n        }\n\n        textarea {\n            width: 100%;\n            height: 100px;\n            background: #0d0d1a;\n            color: #a9b7c6;\n            border: 1px solid #2a2a3a;\n            border-radius: 8px;\n            padding: 10px;\n            font-family: 'Courier New', monospace;\n            font-size: 11px;\n            resize: vertical;\n            transition: all 0.2s;\n        }\n\n        textarea:focus {\n            outline: none;\n            border-color: var(--primary);\n            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);\n        }\n\n        .actions {\n            display: flex;\n            flex-wrap: wrap;\n            gap: 4px;\n            margin: 8px 0;\n        }\n\n        .action-btn {\n            background: #1e1e32;\n            border: 1px solid #333;\n            color: #ccc;\n            padding: 5px 8px;\n            border-radius: 5px;\n            cursor: pointer;\n            font-size: 0.6rem;\n            transition: all 0.2s;\n        }\n\n        .action-btn:hover {\n            border-color: var(--secondary);\n            color: var(--secondary);\n        }\n\n        .action-btn.success {\n            border-color: var(--success);\n            color: var(--success);\n        }\n\n        .action-btn.warning {\n            border-color: var(--warning);\n            color: var(--warning);\n        }\n\n        .action-btn.error {\n            border-color: var(--error);\n            color: var(--error);\n        }\n\n        #details {\n            grid-column: 1/-1;\n            grid-row: 3;\n            background: var(--panel);\n            border-top: 2px solid var(--border);\n            padding: 10px 20px;\n            display: flex;\n            gap: 20px;\n            font-size: 0.7rem;\n            overflow-x: auto;\n            max-height: 150px;\n            overflow-y: auto;\n        }\n\n        .detail-item {\n            display: flex;\n            flex-direction: column;\n            gap: 4px;\n            min-width: 200px;\n        }\n\n        .detail-label {\n            color: var(--dim);\n            font-weight: 300;\n            font-size: 0.65rem;\n        }\n\n        .detail-value {\n            color: var(--primary);\n            font-family: monospace;\n        }\n\n        .loader {\n            display: inline-block;\n            width: 8px;\n            height: 8px;\n            background: currentColor;\n            border-radius: 50%;\n            animation: loading 1.4s infinite;\n        }\n\n        @keyframes loading {\n            0%, 100% { opacity: 1; }\n            50% { opacity: 0.4; }\n        }\n\n        .error-message {\n            background: rgba(255, 0, 102, 0.1);\n            border: 1px solid var(--error);\n            color: var(--error);\n            padding: 8px;\n            border-radius: 4px;\n            font-size: 0.7rem;\n            margin: 4px 0;\n        }\n\n        .success-message {\n            background: rgba(0, 255, 136, 0.1);\n            border: 1px solid var(--success);\n            color: var(--success);\n            padding: 8px;\n            border-radius: 4px;\n            font-size: 0.7rem;\n            margin: 4px 0;\n        }\n    </style>\n</head>\n<body>\n    <div id=\"app\">\n        <!-- Header -->\n        <header>\n            <div class=\"logo\">\n                ⚛️ آدميتي V36.0\n                <small>Clean Architecture Edition</small>\n                <span class=\"status-indicator\" id=\"status\"></span>\n            </div>\n            <div>\n                <button class=\"btn primary\" id=\"load-btn\">📂 فتح</button>\n                <button class=\"btn\" id=\"save-btn\">💾 حفظ</button>\n                <button class=\"btn danger\" id=\"reset-btn\">🔄 إعادة تعيين</button>\n            </div>\n        </header>\n\n        <!-- Mirror (Main Viewport) -->\n        <div id=\"mirror\"></div>\n\n        <!-- Control Panel -->\n        <div id=\"panel\">\n            <!-- Containers Section -->\n            <div class=\"section\">\n                <h3>📦 الحاويات</h3>\n                <div id=\"containers-list\"></div>\n                <button class=\"action-btn لا  -->\n            <div class=\"section\">\n                <h3>⚡ المحرر</h3>\n                <div id=\"editor-info\" style=\"font-size:0.65rem; color:var(--dim);\">جاهز للكتابة...</div>\n                <textarea id=\"editor\" placeholder=\"// اكتب الكود هنا...\"></textarea>\n                <div id=\"editor-messages\"></div>\n                <div class=\"actions\" id=\"editor-actions\">\n                    <button class=\"action-btn success\" id=\"apply-btn\">✅ تطبيق</button>\n                    <button class=\"action-btn\" id=\"undo-btn\">↩️ تراجع</button>\n                    <button class=\"action-btn\" id=\"redo-btn\">↪️ إعادة</button>\n                    <button class=\"action-btn error\" id=\"delete-btn\">🗑️ حذف</button>\n                </div>\n            </div>\n\n            <!-- History Section -->\n            <div class=\"section\">\n                <h3>📜 السجل</h3>\n                <div id=\"history-log\" style=\"font-size:0.65rem; color:#888; max-height:100px; overflow-y:auto;\"></div>\n            </div>\n        </div>\n\n        <!-- Details Footer -->\n        <div id=\"details\">\n            <div class=\"detail-item\">\n                <span class=\"detail-label\">📌 المحدد</span>\n                <span class=\"detail-value\" id=\"selected-info\">لا شيء</span>\n            </div>\n            <div class=\"detail-item\">\n                <span class=\"detail-label\">📊 الإحصائيات</span>\n                <span class=\"detail-value\" id=\"stats-info\">-</span>\n            </div>\n            <div class=\"detail-item\">\n                <span class=\"detail-label\">🔗 الاتصال</span>\n                <span class=\"detail-value\" id=\"connection-info\">⏳ فحص...</span>\n            </div>\n        </div>\n    </div>\n\n    <!-- Scripts -->\n    <script src=\"src/main.js\"></script>\n</body>\n</html>"
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آدميتي V36.0 | Clean Architecture Edition</title>
+    <style>
+        :root {
+            --primary: #00ff88;
+            --secondary: #ff0066;
+            --tertiary: #ffaa00;
+            --conscious: #00aaff;
+            --bg: #0a0a0f;
+            --panel: #12121f;
+            --text: #e0e0e0;
+            --dim: #666;
+            --border: #2a2a3a;
+            --container: #161625;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --error: #ff0066;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* تصميم صفحة القفل الخارجية لحجب المنصة عن العامة */
+        #public-gate {
+            background-color: #0a0a0f;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .gate-box {
+            padding: 30px;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            background-color: #12121f;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+        }
+        .gate-box input {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: #0a0a0f;
+            color: white;
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        .gate-box input:focus { border-color: var(--conscious); }
+        .gate-box button {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 30px;
+            background-color: var(--primary);
+            color: #0a0a0f;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        .gate-box button:hover { opacity: 0.9; box-shadow: 0 0 10px var(--primary); }
+
+        /* إخفاء التطبيق الرئيسي حتى يفتح المطور القفل */
+        #app {
+            display: none;
+            grid-template-columns: 1fr 380px;
+            grid-template-rows: 60px 1fr auto;
+            height: 100vh;
+        }
+
+        header {
+            grid-column: 1/-1;
+            background: linear-gradient(90deg, #050508, var(--panel));
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            justify-content: space-between;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary);
+        }
+
+        .logo small {
+            font-size: 0.7rem;
+            color: var(--dim);
+            margin-right: 10px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ffaa00;
+            display: inline-block;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.online {
+            background: #00ff88;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid #444;
+            color: #ccc;
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+        }
+
+        .btn.primary {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn.danger {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        #mirror {
+            grid-column: 1;
+            grid-row: 2;
+            background: #0d0d1a;
+            border: none;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        #panel {
+            grid-column: 2;
+            grid-row: 2;
+            background: #050508;
+            border-right: 1px solid var(--border);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+
+        .section {
+            background: var(--container);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .section h3 {
+            font-size: 0.8rem;
+            color: var(--primary);
+            margin-bottom: 4px;
+            border-bottom: 1px solid #2a2a3a;
+            padding-bottom: 6px;
+        }
+
+        .item {
+            background: var(--panel);
+            border: 1px solid #2a2a3a;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .item:hover {
+            border-color: var(--conscious);
+            box-shadow: 0 0 10px rgba(0, 170, 255, 0.2);
+        }
+
+        .item.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .item-icon {
+            font-size: 1rem;
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: var(--text);
+        }
+
+        .item-status {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #00ff88;
+            margin-left: auto;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: #0d0d1a;
+            color: #a9b7c6;
+            border: 1px solid #2a2a3a;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            resize: vertical;
+            transition: all 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin: 8px 0;
+        }
+
+        .action-btn {
+            background: #1e1e32;
+            border: 1px solid #333;
+            color: #ccc;
+            padding: 5px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.6rem;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+
+        .action-btn.success {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .action-btn.warning {
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .action-btn.error {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        #details {
+            grid-column: 1/-1;
+            grid-row: 3;
+            background: var(--panel);
+            border-top: 2px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            gap: 20px;
+            font-size: 0.7rem;
+            overflow-x: auto;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 200px;
+        }
+
+        .detail-label {
+            color: var(--dim);
+            font-weight: 300;
+            font-size: 0.65rem;
+        }
+
+        .detail-value {
+            color: var(--primary);
+            font-family: monospace;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: currentColor;
+            border-radius: 50%;
+            animation: loading 1.4s infinite;
+        }
+
+        @keyframes loading {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .error-message {
+            background: rgba(255, 0, 102, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin: 4px 0;
+        }
+
+        .success-message {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin: 4px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="public-gate">
+        <div class="gate-box">
+            <h2>⚛️ منصة آدميتي قيد التحول 🛠️</h2>
+            <p style="color: var(--dim); margin-bottom: 15px;">الوصول متاح حالياً للمطور الرئيسي فقط.</p>
+            <input type="password" id="dev-code" placeholder="أدخل رمز المطور السري"><br>
+            <button onclick="checkGate()">فتح المنصة الحية</button>
+        </div>
+    </div>
+
+    <div id="app">
+        <header>
+            <div class="logo">
+                ⚛️ آدميتي V36.0
+                <small>Clean Architecture Edition</small>
+                <span class="status-indicator" id="status"></span>
+            </div>
+            <div>
+                <button class="btn primary" id="load-btn">📂 فتح</button>
+                <button class="btn" id="save-btn">💾 حفظ</button>
+                <button class="btn danger" id="reset-btn">🔄 إعادة تعيين</button>
+            </div>
+        </header>
+
+        <div id="mirror"></div>
+
+        <div id="panel">
+            <div class="section">
+                <h3>📦 الحاويات</h3>
+                <div id="containers-list"></div>
+                <button class="action-btn success" id="add-container-btn">➕ إضافة حاوية</button>
+            </div>
+            
+            <div class="section">
+                <h3>⚡ المحرر</h3>
+                <div id="editor-info" style="font-size:0.65rem; color:var(--dim);">جاهز للكتابة...</div>
+                <textarea id="editor" placeholder="// اكتب الكود هنا..."></textarea>
+                <div id="editor-messages"></div>
+                <div class="actions" id="editor-actions">
+                    <button class="action-btn success" id="apply-btn">✅ تطبيق</button>
+                    <button class="action-btn" id="undo-btn">↩️ تراجع</button>
+                    <button class="action-btn" id="redo-btn">↪️ إعادة</button>
+                    <button class="action-btn error" id="delete-btn">🗑️ حذف</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>📜 السجل</h3>
+                <div id="history-log" style="font-size:0.65rem; color:#888; max-height:100px; overflow-y:auto;"></div>
+            </div>
+        </div>
+
+        <div id="details">
+            <div class="detail-item">
+                <span class="detail-label">📌 المحدد</span>
+                <span class="detail-value" id="selected-info">لا شيء</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">📊 الإحصائيات</span>
+                <span class="detail-value" id="stats-info">-</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">🔗 الاتصال</span>
+                <span class="detail-value" id="connection-info">⏳ فحص...</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="src/main.js"></script>
+    <script>
+        function checkGate() {
+            var code = document.getElementById('dev-code').value;
+            if (code === "1234") {
+                document.getElementById('public-gate').style.display = 'none';
+                document.getElementById('app').style.display = 'grid'; // تشغيل شبكة الواجهة الأصلية بالكامل
+            } else {
+                alert("الرمز غير صحيح، الوصول مرفوض.");
+            }
+        }
+    </script>
+</body>
+</html>
