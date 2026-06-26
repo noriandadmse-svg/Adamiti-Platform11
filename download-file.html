@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آدميتي V35.2 | الإضافات الحرجة مكتملة</title>
+    <style>
+        :root {
+            --primary: #00ff88;
+            --secondary: #ff0066;
+            --tertiary: #ffaa00;
+            --conscious: #00aaff;
+            --bg: #0a0a0f;
+            --panel: #12121f;
+            --text: #e0e0e0;
+            --dim: #666;
+            --border: #2a2a3a;
+            --container: #161625;
+            --tool: #1a1a2e;
+            --map-objects: #00aaff;
+            --map-reactor: #ffaa00;
+            --map-data: #00ff88;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+        #app {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            grid-template-rows: 60px 1fr auto;
+            height: 100vh;
+        }
+        header {
+            grid-column: 1/-1;
+            background: linear-gradient(90deg, #050508, var(--panel));
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            justify-content: space-between;
+        }
+        .logo {
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary);
+        }
+        .logo small {
+            font-size: 0.7rem;
+            color: var(--dim);
+            margin-right: 10px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ffaa00;
+            display: inline-block;
+            margin-left: 8px;
+        }
+        .status-dot.online {
+            background: #00ff88;
+        }
+        .import-btn {
+            background: transparent;
+            border: 1px solid #444;
+            color: #ccc;
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .import-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        #mirror {
+            background: #0d0d1a;
+            border: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        #panel {
+            background: #050508;
+            border-right: 1px solid var(--border);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+        .sec {
+            background: var(--container);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .sec h3 {
+            font-size: 0.8rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #2a2a3a;
+            padding-bottom: 6px;
+        }
+
+        .mini-c {
+            background: var(--tool);
+            border: 1px solid #2a2a3a;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 6px;
+            font-size: 0.7rem;
+            pointer-events: none;
+        }
+        .mini-c.selected {
+            border-color: var(--conscious);
+            box-shadow: 0 0 15px rgba(0, 170, 255, 0.3);
+        }
+        .mini-h {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: bold;
+        }
+        .mini-h.objects {
+            color: var(--map-objects);
+        }
+        .mini-h.reactor {
+            color: var(--map-reactor);
+        }
+        .mini-h.data {
+            color: var(--map-data);
+        }
+        .mini-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: auto;
+        }
+        .ready {
+            background: #00ff88;
+        }
+        .working {
+            background: #ffaa00;
+            animation: pulse 0.5s infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        #editor {
+            width: 100%;
+            height: 100px;
+            background: #0d0d1a;
+            color: #a9b7c6;
+            border: 1px solid #2a2a3a;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 11px;
+            resize: vertical;
+        }
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin: 6px 0;
+        }
+        .act-btn {
+            background: #1e1e32;
+            border: 1px solid #333;
+            color: #ccc;
+            padding: 5px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.6rem;
+            transition: 0.2s;
+        }
+        .act-btn:hover {
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+        .act-btn.primary {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .act-btn.danger {
+            border-color: #660022;
+            color: #ff4466;
+        }
+        .act-btn.mirror-btn {
+            border-color: #ffaa00;
+            color: #ffaa00;
+            font-weight: bold;
+        }
+        .act-btn.server-btn {
+            border-color: var(--conscious);
+            color: var(--conscious);
+        }
+        .act-btn.tool-btn {
+            background: #1a1a3a;
+            border-color: #334;
+        }
+
+        .reassemble {
+            background: linear-gradient(135deg, var(--secondary), #ff0044);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 6px;
+        }
+
+        #details {
+            grid-column: 1/-1;
+            background: var(--panel);
+            border-top: 2px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            gap: 20px;
+            font-size: 0.7rem;
+        }
+        #details h4 {
+            color: var(--dim);
+            font-weight: 300;
+            font-size: 0.65rem;
+        }
+        #witness-log {
+            font-family: monospace;
+            font-size: 0.6rem;
+            color: #888;
+            line-height: 1.6;
+        }
+        #pending-msg {
+            color: #ffaa00;
+            font-size: 0.7rem;
+            margin: 4px 0;
+        }
+
+        #file-tree {
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.6rem;
+            color: #aaa;
+            line-height: 1.8;
+        }
+        #file-tree .tree-item {
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        #file-tree .tree-item:hover {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--primary);
+        }
+        #file-tree .tree-item.folder {
+            color: var(--conscious);
+        }
+
+        .map-label {
+            font-size: 0.55rem;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-left: 4px;
+        }
+        .map-label.objects {
+            background: rgba(0, 170, 255, 0.2);
+            color: var(--map-objects);
+        }
+        .map-label.reactor {
+            background: rgba(255, 170, 0, 0.2);
+            color: var(--map-reactor);
+        }
+        .map-label.data {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--map-data);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="logo">⚛️ آدميتي V35.2 <small>الإضافات الحرجة مكتملة</small><span class="status-dot" id="server-status"></span></div>
+            <button class="import-btn" id="import-btn">🌌 استيراد كود</button>
+        </header>
+
+        <iframe id="mirror" sandbox="allow-scripts allow-same-origin"></iframe>
+
+        <div id="panel">
+            <div class="sec">
+                <h3>🗺️ الخرائط الثلاث</h3>
+                <div id="containers-list"></div>
+            </div>
+            <div class="sec">
+                <h3>🌳 شجرة النظام</h3>
+                <div id="tree-view"></div>
+            </div>
+            <div class="sec">
+                <h3>⚡ المحرر الذري</h3>
+                <div id="editor-info" style="font-size:0.6rem;color:var(--dim);margin-bottom:4px;">المحدد: —</div>
+                <textarea id="editor" placeholder="// المس أي شيء في المرآة..."></textarea>
+                <div id="pending-msg"></div>
+                <div class="actions" id="main-actions">
+                    <button class="act-btn primary" data-container="cnt-init">🗄️ تهيئة</button>
+                    <button class="act-btn primary" data-container="cnt-generate">🔧 توليد</button>
+                    <button class="act-btn primary" data-container="cnt-create">⚙️ خلق</button>
+                    <button class="act-btn primary" data-container="cnt-process">🔄 معالجة</button>
+                    <button class="act-btn primary" data-container="cnt-modify">✏️ تعديل</button>
+                    <button class="act-btn primary" data-container="cnt-install">📥 تثبيت</button>
+                </div>
+                <div class="actions" id="tool-actions" style="display: none;"></div>
+                <div class="actions" id="actions-2">
+                    <button class="act-btn mirror-btn" id="btn-edit-mirror">🪞 معالجة المرآة</button>
+                    <button class="act-btn" id="btn-undo">↩️ تراجع</button>
+                    <button class="act-btn" id="btn-redo">↪️ إعادة</button>
+                    <button class="act-btn" id="btn-storage">🧪 مختبر</button>
+                    <button class="act-btn danger" data-action="replace">🔄 استبدال</button>
+                    <button class="act-btn danger" data-action="delete">🗑️ حذف</button>
+                </div>
+                <div class="actions" id="server-actions">
+                    <button class="act-btn server-btn" id="btn-load-file">📂 فتح ملف</button>
+                    <button class="act-btn server-btn" id="btn-save-file">💾 حفظ للمشروع</button>
+                    <button class="act-btn server-btn" id="btn-restart">🔄 إعادة تشغيل</button>
+                    <button class="act-btn server-btn" id="btn-refresh-tree">🌳 تحديث الشجرة</button>
+                </div>
+                <button class="reassemble" id="reassemble-btn">⚡ إعادة تجميع وحقن</button>
+            </div>
+            <div class="sec" id="file-tree-section" style="display:none;">
+                <h3>📁 ملفات المشروع</h3>
+                <div id="file-tree"></div>
+            </div>
+            <div id="storage-panel" style="display:none; background:var(--container); border:1px solid var(--conscious); border-radius:12px; padding:12px; margin-top:8px;">
+                <h4 style="color:var(--conscious);">🧪 المختبر</h4>
+                <div id="storage-list"></div>
+                <button class="act-btn" id="btn-save-snippet" style="margin-top:8px;width:100%;">💾 حفظ الكود الحالي</button>
+            </div>
+        </div>
+
+        <div id="details">
+            <div><h4>📌 المحدد</h4><div id="selected-info">⏳ المس شيئاً في المرآة...</div></div>
+            <div><h4>📜 سجل الشهود</h4><div id="witness-log"></div></div>
+            <div><h4>📊 إحصائيات</h4><div id="stats">حاويات: 15 | 🟢</div></div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+
+            const UUID = () => crypto.randomUUID();
+
+            // ╔══════════════════════════════════════════════════════════════╗
+            // ║                V35.2 — DOMParser + sanitize                ║
+            // ╚══════════════════════════════════════════════════════════════╝
+
+            const sanitizeHTML = (html) => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                // إزالة عناصر script
+                doc.querySelectorAll('script').forEach(el => el.remove());
+                // إزالة أحداث onclick, onerror, onload...
+                doc.querySelectorAll('*').forEach(el => {
+                    Array.from(el.attributes).forEach(attr => {
+                        if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
+                    });
+                });
+                return doc.body.innerHTML;
+            };
+
+            // ╔══════════════════════════════════════════════════════════════╗
+            // ║                      MAP 1: OBJECTS                        ║
+            // ╚══════════════════════════════════════════════════════════════╝
+
+            class AdamitiObject {
+                constructor(id, type, kind, name) { this.id = id;
+                    this.type = type;
+                    this.kind = kind;
+                    this.name = name;
+                    this.state = 'active';
+                    this.parent = null;
+                    this.children = [];
+                    this.createdAt = Date.now();
+                    this.updatedAt = Date.now(); }
+                init() { this.state = 'active'; }
+                mount() { this.state = 'ready'; }
+                update(props) { Object.assign(this, props);
+                    this.updatedAt = Date.now(); }
+                destroy() { this.state = 'destroyed';
+                    this.children = [];
+                    this.parent = null; }
+                addChild(childId) { if (!this.children.includes(childId)) this.children.push(childId); }
+                removeChild(childId) { this.children = this.children.filter(c => c !== childId); }
+            }
+
+            class DigitalObject extends AdamitiObject { constructor(id, kind, name) { super(id, 'digital', kind, name);
+                    this.cloneable = true;
+                    this.editable = true; } }
+            class RealObject extends AdamitiObject { constructor(id, kind, name) { super(id, 'real', kind, name);
+                    this.cloneable = false;
+                    this.editable = false;
+                    this.proofs = {}; } }
+
+            class Container extends DigitalObject {
+                constructor(id, name, icon, tools = []) { super(id, 'container', name);
+                    this.icon = icon;
+                    this.tools = tools;
+                    this.elements = [];
+                    this.inlet = null;
+                    this.outlet = null; }
+                addElement(elId) { if (!this.elements.includes(elId)) this.elements.push(elId); }
+                removeElement(elId) { this.elements = this.elements.filter(e => e !== elId); }
+                connect(inlet, outlet) { this.inlet = inlet;
+                    this.outlet = outlet; }
+                clone(newId, newName) { const c = new Container(newId, newName || this.name, this.icon, this.tools.map(
+                        t => ({ name: t.name, state: 'idle' })));
+                    c.elements = [...this.elements];
+                    c.inlet = this.inlet;
+                    c.outlet = this.outlet; return c; }
+            }
+
+            class User extends RealObject { constructor(id, name, email) { super(id, 'user', name);
+                    this.email = email;
+                    this.containers = [];
+                    this.level = 1; } }
+            class Device extends RealObject { constructor(id, fingerprint) { super(id, 'device', 'جهاز');
+                    this.fingerprint = fingerprint; } }
+            class Spacetime extends RealObject { constructor(id, location = {}, time = {}) { super(id, 'spacetime',
+                        'الزمكان');
+                    this.location = location;
+                    this.time = time; } }
+
+            class ContainerRenderer {
+                static toHTML(container) { return `<!-- حاوية: ${container.name} -->\n<div data-container-id="${container.id}" style="border:2px solid #00aaff;border-radius:10px;padding:12px;background:#1a1a30;">\n  <strong style="color:#00aaff;">${container.icon} ${container.name}</strong>\n  <div style="display:flex;gap:4px;margin-top:8px;">${container.tools.map((t,i) => `<span data-tool-index="${i}" style="background:#1e1e38;border:1px solid #333;border-radius:4px;padding:2px 6px;font-size:0.55rem;color:#aaa;">⚙️ ${t.name}</span>`).join('')}</div>\n</div>`; }
+            }
+
+            // ╔══════════════════════════════════════════════════════════════╗
+            // ║                      MAP 2: STORE                           ║
+            // ╚══════════════════════════════════════════════════════════════╝
+
+            const Store = {
+                selection: null,
+                clipboard: null,
+                pendingAction: null,
+                mirrorEditorContent: '',
+                currentFilePath: 'public/index.html',
+                containers: new Map(),
+                elements: new Map(),
+
+                registerContainer(c) { this.containers.set(c.id, c); },
+                registerElement(el) { this.elements.set(el.id, el); },
+                removeContainer(id) { const c = this.containers.get(id); if (!c) return;
+                    c.children.forEach(childId => this.removeContainer(childId));
+                    c.elements.forEach(elId => this.elements.delete(elId)); if (c.parent) { const parent = this.containers
+                            .get(c.parent); if (parent) parent.removeChild(id); }
+                    this.containers.delete(id); },
+                removeElement(id) { this.elements.delete(id); },
+
+                getState() { return { selection: this.selection, clipboard: this.clipboard, pendingAction: this
+                        .pendingAction, mirrorEditorContent: this.mirrorEditorContent, containers: Array.from(this
+                            .containers.entries()).map(([id, c]) => ({ id, name: c.name, type: c.type, icon: c.icon,
+                                state: c.state, tools: c.tools.map(t => ({ name: t.name, state: t.state })),
+                                elements: [...c.elements], children: [...c.children], parent: c.parent, inlet: c
+                                .inlet, outlet: c.outlet
+                            })), elements: Array.from(this.elements.entries()).map(([id, el]) => ({ id, tag: el.tag,
+                            html: el.html }))
+                    }; },
+                restoreState(s) { this.containers.clear();
+                    this.elements.clear();
+                    s.containers.forEach(cd => { const c = new Container(cd.id, cd.name, cd.icon, cd.tools);
+                        c.state = cd.state;
+                        c.elements = [...cd.elements];
+                        c.children = [...cd.children];
+                        c.parent = cd.parent;
+                        c.inlet = cd.inlet;
+                        c.outlet = cd.outlet;
+                        this.containers.set(c.id, c); });
+                    s.elements.forEach(ed => { this.elements.set(ed.id, { id: ed.id, tag: ed.tag, html: ed.html }); });
+                    this.selection = s.selection;
+                    this.clipboard = s.clipboard;
+                    this.pendingAction = s.pendingAction;
+                    this.mirrorEditorContent = s.mirrorEditorContent; }
+            };
+
+            // ╔══════════════════════════════════════════════════════════════╗
+            // ║                   EVENT BUS                                 ║
+            // ╚══════════════════════════════════════════════════════════════╝
+
+            const EventBus = {
+                listeners: {},
+                on(event, callback) { if (!this.listeners[event]) this.listeners[event] = [];
+                    this.listeners[event].push(callback); },
+                emit(event, data) { if (this.listeners[event]) { this.listeners[event].forEach(cb => cb(data)); } },
+                off(event, callback) { if (this.listeners[event]) { this.listeners[event] = this.listeners[event].filter(
+                        cb => cb !== callback); } }
+            };
+
+            // ╔══════════════════════════════════════════════════════════════╗
+            // ║                   INFRASTRUCTURE                             ║
+            // ╚══════════════════════════════════════════════════════════════╝
+
+            const Witness = {
+                log: [],
+                init() { EventBus.on('container:selected', (data) => this.add(`👆 تحديد حاوية: ${data.name}`));
+                    EventBus.on('tool:selected', (data) => this.add(`👆 تحديد أداة: ${data.name}`));
+                    EventBus.on('element:selected', (data) => this.add(`👆 تحديد عنصر: ${data.tag}`));
+                    EventBus.on('editor:selected', () => this.add(`👆 تحديد المحرر`));
+                    EventBus.on('container:created', (data) => this.add(`✨ تم إنشاء حاوية: ${data.name}`));
+                    EventBus.on('container:deleted', (data) => this.add(`🗑️ حذف حاوية: ${data.name}`));
+                    EventBus.on('element:created', (data) => this.add(`✨ تم خلق كود داخل: ${data.containerName}`));
+                    EventBus.on('code:injected', (data) => this.add(`💉 حقن تغييرات على: ${data.name}`));
+                    EventBus.on('state:changed', () => this.add('🔄 تغيير في الحالة')); },
+                add(msg) { const t = new Date().toLocaleTimeString('ar-SA');
+                    this.log.push(`[${t}] ${msg}`); if (this.log.length > 50) this.log.shift(); const el = document
+                        .getElementById('witness-log'); if (el) el.innerHTML = this.log.slice(-10).join('<br>'); }
+            };
+
+            const StatsRenderer = {
+                update() { const el = document.getElementById('stats'); if (el) el.textContent =
+                        `حاويات: ${Store.containers.size} | عناصر: ${Store.elements.size} | 🟢`; }
+            };
+
+            class HistoryManager {
+                constructor(store) { this.store = store;
+                    this.states = [];
+                    this.index = -1; }
+                save() { const s = this.store.getState();
+                    this.states = this.states.slice(0, this.index + 1);
+                    this.states.push(structuredClone(s));
+                    this.index++;
+                    this.updateButtons(); }
+                undo() { if (this.index > 0) { this.index--;
+                        this.store.restoreState(structuredClone(this.states[this.index]));
+                        this.updateButtons(); return true; } return false; }
+                redo() { if (this.index < this.states.length - 1) { this.index++;
+                        this.store.restoreState(structuredClone(this.states[this.index]));
+                        this.updateButtons(); return true; } return false; }
+                updateButtons() { document.getElementById('btn-undo').style.opacity = this.index > 0 ? '1' : '0.4';
+                    document.getElementById('btn-redo').style.opacity = this.index < this.states.length - 1 ? '1' :
+                        '0.4'; }
+            }
+
+            class StorageLab {
+                constructor() { this.snippets = new Map();
+                    this.loadStorage(); }
+                save(name, code) { const id = UUID(); const s = { id, name, code, date: new Date().toLocaleString(
+                        'ar-SA') }; this.snippets.set(id, s);
+                    this.saveToLS(); return s; }
+                loadSnippet(id) { const s = this.snippets.get(id); if (s) document.getElementById('editor').value = s
+                        .code; }
+                deleteSnippet(id) { this.snippets.delete(id);
+                    this.saveToLS(); }
+                saveToLS() { const data = { version: 1, items: Array.from(this.snippets.values()) };
+                    localStorage.setItem('adamiti_snippets_v1', JSON.stringify(data)); }
+                loadStorage() { try { const d = localStorage.getItem('adamiti_snippets_v1'); if (d) { const parsed =
+                                JSON.parse(d); if (parsed.items) parsed.items.forEach(s => this.snippets.set(s.id,
+                                s)); } } catch (e) {} }
+                render() { const l = document.getElementById('storage-list'); if (!l) return;
+                    l.innerHTML = ''; this.snippets.forEach(s => { const row = document.createElement('div');
+                        row.style.cssText =
+                            'display:flex;justify-content:space-between;padding:4px;background:#1a1a30;margin:4px 0;border-radius:4px;';
+                        row.innerHTML = `<span>📄 ${s.name}</span><div></div>`; const loadBtn = document
+                            .createElement('button');
+                        loadBtn.textContent = '📂';
+                        loadBtn.onclick = () => this.loadSnippet(s.id); const delBtn = document.createElement(
+                            'button');
+                        delBtn.textContent = '🗑️';
+                        delBtn.onclick = () => { this.deleteSnippet(s.id);
+                            this.render(); };
+                        row.children[1].appendChild(loadBtn);
+                        row.children[1].appendChild(delBtn);
+                        l.appendChild(row); }); }
+            }
+
+            const history = new HistoryManager(Store);
+            const storage = new StorageLab();
+
+            // ╔══════════════════════════════════════════════════════════════╗
+            // ║                V35.2 — ServerAPI + Auth                     ║
+            // ╚══════════════════════════════════════════════════════════════╝
+
+            const ServerAPI = {
+                base: '',
+                token: 'adamiti-dev-token',
+                getToken() { return localStorage.getItem('adamiti_auth_token') || this.token; },
+                setToken(t) { localStorage.setItem('adamiti_auth_token', t); },
+                headers() { return { 'Content-Type': 'application/json', 'X-Auth-Token': this.getToken() }; },
+                async checkStatus() { try { const res = await fetch(this.base + '/api/status'); if (res.ok) { document
+                            .getElementById('server-status').classList.add('online'); return await res.json(); } } catch (
+                        e) {}
+                    document.getElementById('server-status').classList.remove('online'); return null; },
+                async readFile(filePath) { try { const res = await fetch(this.base +
+                            `/api/read?path=${encodeURIComponent(filePath)}`); if (res.ok) { const data = await res
+                            .json(); return data.content; } } catch (e) {} return null; },
+                async writeFile(filePath, content) { try { const res = await fetch(this.base + '/api/write', { method: 'POST',
+                            headers: this.headers(), body: JSON.stringify({ path: filePath, content }) }); return res
+                        .ok; } catch (e) {} return false; },
+                async getTree(dir = '.') { try { const res = await fetch(this.base +
+                            `/api/tree?dir=${encodeURIComponent(dir)}`); if (res.ok) { const data = await res.json(); return data
+                            .tree; } } catch (e) {} return []; },
+                async restart() { try { const res = await fetch(this.base + '/api/restart', { method: 'POST', headers: this
+                            .headers() }); return res.ok; } catch (e) {} return false; }
+            };
+
+            function escapeHTML(str) { return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
+
+            // ╔══════════════════════════════════════════════════════════════╗
+            // ║                   RENDERERS                                 ║
+            // ╚══════════════════════════════════════════════════════════════╝
+
+            const Renderers = {
+                init() { EventBus.on('state:changed', () => this.updateAll()); },
+                containerHTML(container, level = 0) { const sel = container.id === Store.selection?.containerId ?
+                        ' selected' : ''; const mapClass = container.kind === 'objects' ? 'objects' : container.kind ===
+                        'reactor' ? 'reactor' : container.kind === 'data' ? 'data' : ''; let html =
+                        `<div class="container-mini${sel}" data-container-id="${container.id}" style="margin-right:${level*20}px;">`;
+                    html +=
+                        `<div class="mini-header ${mapClass}">${container.icon} ${container.name}<span class="mini-state ${container.state==='working'?'working':'ready'}"></span></div>`; if (
+                        container.tools.length > 0) { html +=
+                            `<div class="mini-tools">${container.tools.map((t,i) => `<span class="mini-tool${Store.selection?.type==='tool' && Store.selection?.containerId===container.id && Store.selection?.toolIndex===i?' working':''}" data-tool-index="${i}" data-container-id="${container.id}">⚙️ ${t.name}</span>`).join('')}</div>`; } if (
+                        container.elements.length > 0) { html +=
+                            '<div class="elements-container" style="margin-top:6px;font-size:0.6rem;color:#aaa;">';
+                        container.elements.forEach(elId => { const el = Store.elements.get(elId); if (el) html +=
+                                `<div class="mini-element" data-element-id="${elId}" style="background:#111122;border:1px solid #2a2a3a;border-radius:3px;padding:4px 8px;margin:2px 0;cursor:pointer;">📄 ${el.tag}: ${escapeHTML((el.html||'').substring(0,60))}...</div>`; });
+                        html += '</div>'; } if (container.children.length > 0) { html += '<div class="children-container" style="margin-right:20px;border-right:1px solid #333;padding-right:10px;">';
+                        container.children.forEach(childId => { const child = Store.containers.get(childId); if (
+                                child) html += Renderers.containerHTML(child, level + 1); });
+                        html += '</div>'; }
+                    html += '</div>'; return html; },
+                mirrorHTML() { let contHTML = '';
+                    Store.containers.forEach(c => { if (!c.parent) contHTML += Renderers.containerHTML(c, 0); }); const
+                        displayContent = Store.mirrorEditorContent || document.getElementById('editor')?.value ||
+                        '// المحرر فارغ...'; const escapedContent = escapeHTML(displayContent); return `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><style>
+              body { font-family: system-ui; background: #0d0d1a; color: #e0e0e0; margin: 0; padding: 20px; overflow-y: auto; }
+              .container-mini { background: #1a1a30; border: 1px solid #2a2a3a; border-radius: 8px; padding: 10px; margin-bottom: 6px; cursor: pointer; transition: all 0.2s; }
+              .container-mini:hover { border-color: #00aaff; } .container-mini.selected { border-color: #00aaff; box-shadow: 0 0 15px rgba(0,170,255,0.3); }
+              .mini-header { display: flex; align-items: center; gap: 6px; font-weight: bold; margin-bottom: 4px; }
+              .mini-header.objects { color: #00aaff; } .mini-header.reactor { color: #ffaa00; } .mini-header.data { color: #00ff88; }
+              .mini-state { width: 6px; height: 6px; border-radius: 50%; margin-right: auto; }
+              .ready { background: #00ff88; } .working { background: #ffaa00; animation: pulse 0.5s infinite; }
+              @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+              .mini-tools { display: flex; flex-wrap: wrap; gap: 3px; }
+              .mini-tool { background: #1e1e38; border: 1px solid #333; border-radius: 4px; padding: 2px 6px; font-size: 0.55rem; cursor: pointer; color: #aaa; }
+              .mini-tool:hover { border-color: #00ff88; color: #00ff88; } .mini-tool.working { border-color: #ffaa00; }
+              .children-container { margin-right: 20px; border-right: 1px solid #333; padding-right: 10px; }
+              .elements-container { margin-top: 6px; font-size: 0.6rem; color: #aaa; }
+              .mini-element { background: #111122; border: 1px solid #2a2a3a; border-radius: 3px; padding: 4px 8px; margin: 2px 0; cursor: pointer; }
+              .mini-element:hover { border-color: #ff0066; color: #ff0066; }
+              .mirror-section { background: #0a0a0f; border: 1px solid #2a2a3a; border-radius: 8px; padding: 10px; margin-top: 12px; }
+              .mirror-section h3 { color: #00ff88; font-size: 0.8rem; margin-bottom: 8px; }
+              #mirror-editor-display { background: #0d0d1a; color: #a9b7c6; border: 1px solid #2a2a3a; border-radius: 5px; padding: 10px; font-family: monospace; font-size: 11px; min-height: 80px; white-space: pre-wrap; cursor: pointer; word-break: break-all; }
+              #mirror-editor-display:hover { border-color: #ff0066; } #mirror-editor-display.selected { border-color: #ff0066; box-shadow: 0 0 15px rgba(255,0,102,0.3); }
+            </style></head><body>
+              <div style="color: #888; margin-bottom: 16px;">🔍 المرآة — المس أي شيء لتحديده</div>
+              <div><div style="color: #ffaa00; font-size: 0.8rem; margin-bottom: 8px;">🗺️ الخرائط الثلاث</div>${contHTML}
+              <div class="mirror-section"><h3>⚡ المحرر</h3><div id="mirror-editor-display" class="${Store.selection?.type==='editor'?'selected':''}">${escapedContent}</div></div></div>
+            </body></html>`; },
+                panel() { const contList = document.getElementById('containers-list'); const treeView = document
+                        .getElementById('tree-view'); if (!contList || !treeView) return;
+                    contList.innerHTML = '';
+                    Store.containers.forEach(c => { if (!c.parent) contList.appendChild(Renderers.panelTree(c,
+                        0)); });
+                    treeView.innerHTML = '<span style="color:#00aaff;">🏠 حاوية المنصة</span><br>';
+                    Store.containers.forEach(c => { if (!c.parent) treeView.innerHTML += Renderers.treeHTML(c,
+                        0); });
+                    StatsRenderer.update(); },
+                panelTree(container, level = 0) { const div = document.createElement('div');
+                    div.className = 'mini-c'; if (container.id === Store.selection?.containerId) div.classList.add(
+                        'selected');
+                    div.style.marginRight = `${level * 15}px`; const mapClass = container.kind === 'objects' ? 'objects' :
+                        container.kind === 'reactor' ? 'reactor' : container.kind === 'data' ? 'data' : ''; const mapLabel =
+                        container.kind === 'objects' ? ' [كائنات]' : container.kind === 'reactor' ? ' [مفاعل]' : container
+                        .kind === 'data' ? ' [بيانات]' : ''; let inner =
+                        `<div class="mini-h ${mapClass}">${container.icon} ${container.name}<span class="map-label ${mapClass}" style="font-size:0.5rem;">${mapLabel}</span><span class="mini-dot ${container.state==='working'?'working':'ready'}"></span></div>`; if (
+                        container.tools.length > 0) { inner +=
+                            `<div class="mini-tools">${container.tools.map((t,i) => `<span class="mini-t${Store.selection?.type==='tool' && Store.selection?.containerId===container.id && Store.selection?.toolIndex===i?' working':''}">⚙️ ${t.name}</span>`).join('')}</div>`; } if (
+                        container.elements.length > 0) { inner +=
+                            '<div style="margin-top:4px;font-size:0.55rem;color:#aaa;">';
+                        container.elements.forEach(elId => { const el = Store.elements.get(elId); if (el) inner +=
+                                `<div style="background:#111122;border:1px solid #2a2a3a;border-radius:3px;padding:2px 6px;margin:2px 0;">📄 ${el.tag}: ${escapeHTML((el.html||'').substring(0,40))}...</div>`; });
+                        inner += '</div>'; }
+                    div.innerHTML = inner; if (container.children.length > 0) { container.children.forEach(childId => { const
+                            child = Store.containers.get(childId); if (child) div.appendChild(Renderers.panelTree(
+                                child, level + 1)); }); } return div; },
+                treeHTML(container, level = 0) { let html = ''; const prefix = level === 0 ? '' : '├── ';
+                    html +=
+                        `<span style="margin-right:${level*14}px;">${prefix}${container.icon} ${container.name}</span><br>`; if (
+                        container.children.length > 0) { container.children.forEach(childId => { const child = Store
+                            .containers.get(childId); if (child) html += Renderers.treeHTML(child, level + 1); }); } return html; },
+                injectToMirror(containerId) { const mirror = document.getElementById('mirror'); if (!mirror) return; const doc =
+                        mirror.contentDocument || mirror.contentWindow?.document; if (!doc) return; const container = Store
+                        .containers.get(containerId); if (!container) return; const oldEl = doc.querySelector(
+                        `[data-container-id="${containerId}"]`); if (!oldEl) return; const temp = document.createElement(
+                        'div');
+                    temp.innerHTML = Renderers.containerHTML(container); const newEl = temp.firstElementChild; if (newEl) {
+                        oldEl.replaceWith(newEl);
+                        Events.bindMirror(doc); } },
+                updateMirror() { const mirror = document.getElementById('mirror'); if (!mirror) return;
+                    mirror.srcdoc = Renderers.mirrorHTML();
+                    mirror.onload = () => { const d = mirror.contentDocument || mirror.contentWindow?.document; if (d)
+                            Events.bindMirror(d); };
+                    setTimeout(() => { const d = mirror.contentDocument || mirror.contentWindow?.document; if (d) Events
+                            .bindMirror(d); }, 150); },
+                updateAll() { Renderers.panel();
+                    Renderers.updateMirror(); }
+            };
+
+            // ╔══════════════════════════════════════════════════════════════╗
+            // ║                   EVENTS                                    ║
+            // ╚══════════════════════════════════════════════════════════════╝
+
+            const Events = {
+                bindMirror(doc) { if (!doc) return;
+                    doc.body.addEventListener('click', (e) => { if (Store.pendingAction === 'selectCopyTarget') { EventBus
+                                .emit('mirror:copyRequest', e); return; } if (Store.pendingAction ===
+                            'selectPasteContainer') { EventBus.emit('mirror:pasteRequest', e); return; } const toolEl = e
+                            .target.closest('.mini-tool'); if (toolEl) { EventBus.emit('mirror:toolClick', toolEl); return; }
+                        const elementEl = e.target.closest('.mini-element'); if (elementEl) { EventBus.emit(
+                                'mirror:elementClick', elementEl.dataset.elementId); return; } const contEl = e.target
+                            .closest('.container-mini'); if (contEl) { EventBus.emit('mirror:containerClick', contEl.dataset
+                                .containerId); return; } const editorDisplay = e.target.closest('#mirror-editor-display'); if (
+                                editorDisplay) { EventBus.emit('mirror:editorClick'); return; } }); }
+            };
+
+            // ╔══════════════════════════════════════════════════════════════╗
+            // ║                   SERVICES                                  ║
+            // ╚══════════════════════════════════════════════════════════════╝
+
+            const Services = {
+                init() { EventBus.on('mirror:toolClick', (toolEl) => this.selectToolFromElement(toolEl));
+                    EventBus.on('mirror:elementClick', (id) => this.selectElementFromMirror(id));
+                    EventBus.on('mirror:containerClick', (cid) => this.handleContainerClick(cid));
+                    EventBus.on('mirror:editorClick', () => this.selectMirrorEditor());
+                    EventBus.on('mirror:copyRequest', (e) => this.copyFromElement(e));
+                    EventBus.on('mirror:pasteRequest', (e) => this.pasteToContainer(e)); },
+                clearPending() { Store.pendingAction = null;
+                    document.getElementById('tool-actions').style.display = 'none';
+                    document.getElementById('pending-msg').textContent = ''; },
+                selectContainer(id) { const c = Store.containers.get(id); if (!c) return;
+                    Store.selection = { type: 'container', containerId: id }; const editor = document.getElementById(
+                        'editor');
+                    editor.value = ContainerRenderer.toHTML(c);
+                    Store.mirrorEditorContent = editor.value;
+                    document.getElementById('editor-info').innerHTML =
+                        `📦 حاوية: <b style="color:#00aaff;">${c.name}</b>`;
+                    document.getElementById('selected-info').textContent = `${c.name} (حاوية)`;
+                    EventBus.emit('container:selected', { id, name: c.name });
+                    this.clearPending();
+                    EventBus.emit('state:changed'); },
+                selectTool(container, idx, toolEl) { const tool = container.tools[idx]; if (!tool) return;
+                    Store.selection = { type: 'tool', containerId: container.id, toolIndex: idx }; const editor = document
+                        .getElementById('editor');
+                    editor.value = toolEl ? toolEl.outerHTML : `<span class="mini-tool">⚙️ ${tool.name}</span>`;
+                    Store.mirrorEditorContent = editor.value;
+                    document.getElementById('editor-info').innerHTML =
+                        `⚙️ أداة: <b style="color:#ffaa00;">${tool.name}</b>`;
+                    document.getElementById('selected-info').textContent = `${tool.name} (أداة)`;
+                    EventBus.emit('tool:selected', { name: tool.name });
+                    this.clearPending();
+                    EventBus.emit('state:changed'); },
+                selectToolFromElement(toolEl) { const cid = toolEl.dataset.containerId; const idx = parseInt(toolEl.dataset
+                        .toolIndex); const c = Store.containers.get(cid); if (c && !isNaN(idx)) Services.selectTool(
+                    c, idx, toolEl); },
+                selectElementFromMirror(id) { const el = Store.elements.get(id); if (!el) return;
+                    Store.selection = { type: 'element', elementId: id }; const editor = document.getElementById('editor');
+                    editor.value = el.html || '';
+                    Store.mirrorEditorContent = editor.value;
+                    document.getElementById('editor-info').innerHTML =
+                        `📄 عنصر: <b style="color:#ff0066;">${el.tag}</b>`;
+                    document.getElementById('selected-info').textContent = `‹${el.tag}› (عنصر)`;
+                    EventBus.emit('element:selected', { tag: el.tag });
+                    this.clearPending();
+                    EventBus.emit('state:changed'); },
+                selectMirrorEditor() { Store.selection = { type: 'editor' }; const editor = document.getElementById(
+                        'editor'); const editorHTML =
+                        `<div id="mirror-editor-display" style="background: #0d0d1a; color: #a9b7c6; border: 1px solid #2a2a3a; border-radius: 5px; padding: 10px; font-family: monospace; font-size: 11px; min-height: 80px; white-space: pre-wrap; cursor: pointer;">${editor.value || '// المحرر فارغ...'}</div>`;
+                    editor.value = editorHTML;
+                    Store.mirrorEditorContent = editor.value;
+                    document.getElementById('editor-info').innerHTML = `📝 <b style="color:#ffaa00;">محرر المرآة</b>`;
+                    document.getElementById('selected-info').textContent = 'المحرر (عنصر HTML)';
+                    EventBus.emit('editor:selected');
+                    this.clearPending();
+                    EventBus.emit('state:changed'); },
+                handleContainerClick(cid) { if (Store.pendingAction === 'selectParentContainer') { const parentContainer =
+                            Store.containers.get(cid); if (parentContainer) { const newName = prompt('اسم الحاوية الجديدة:',
+                                'حاوية مولدة'); if (newName) { const newId = UUID(); const newContainer = new Container(
+                                    newId, newName, '📦', []);
+                                newContainer.parent = parentContainer.id;
+                                Store.registerContainer(newContainer);
+                                parentContainer.addChild(newId);
+                                EventBus.emit('container:created', { name: newName });
+                                this.clearPending();
+                                history.save();
+                                EventBus.emit('state:changed'); } } return; } if (Store.pendingAction ===
+                        'selectCreateContainer') { const targetContainer = Store.containers.get(cid); if (targetContainer) { this
+                            .clearPending(); const editor = document.getElementById('editor');
+                        editor.value =
+                            `<!-- اكتب كود HTML هنا ليتم خلقه داخل حاوية: ${targetContainer.name} -->\n<div>كود جديد</div>`;
+                        Store.mirrorEditorContent = editor.value;
+                        editor.focus();
+                        Store.selection = { type: 'create-code', containerId: targetContainer.id };
+                        document.getElementById('editor-info').innerHTML =
+                            `⚙️ خلق كود في: <b style="color:#00aaff;">${targetContainer.name}</b>`;
+                        document.getElementById('selected-info').textContent = `خلق في ${targetContainer.name}`;
+                        EventBus.emit('state:changed'); } return; }
+                    Services.selectContainer(cid); },
+                copyFromElement(e) { let copiedCode = '',
+                        copiedName = '',
+                        copiedType = ''; const contEl = e.target.closest('.container-mini'),
+                        toolEl = e.target.closest('.mini-tool'),
+                        editorEl = e.target.closest('#mirror-editor-display'),
+                        elementEl = e.target.closest('.mini-element'); if (toolEl) { copiedCode = toolEl.outerHTML;
+                        copiedName = toolEl.textContent?.replace('⚙️ ', '') || 'أداة';
+                        copiedType = 'tool'; } else if (elementEl) { const elId = elementEl.dataset.elementId; const el =
+                            Store.elements.get(elId); if (el) { copiedCode = el.html;
+                            copiedName = el.tag;
+                            copiedType = 'element'; } } else if (contEl) { const cid = contEl.dataset.containerId; const c =
+                            Store.containers.get(cid); if (c) { copiedCode = ContainerRenderer.toHTML(c);
+                            copiedName = c.name;
+                            copiedType = 'container'; } } else if (editorEl) { copiedCode = document.getElementById('editor')
+                            .value;
+                        copiedName = 'المحرر';
+                        copiedType = 'editor'; } if (copiedCode) { Store.clipboard = { type: copiedType, name: copiedName,
+                            code: copiedCode };
+                        Store.pendingAction = null;
+                        document.getElementById('pending-msg').textContent = '✅ تم النسخ. اضغط "لصق" للمتابعة...';
+                        this.showOnlyPasteButton();
+                        EventBus.emit('state:changed'); } },
+                pasteToContainer(e) { const contEl = e.target.closest('.container-mini'); if (contEl && Store.clipboard) { const
+                        cid = contEl.dataset.containerId; const targetContainer = Store.containers.get(cid); if (
+                        targetContainer) { if (Store.clipboard.type === 'container') { const newId = UUID(); const
+                                newContainer = new Container(newId, Store.clipboard.name + ' (منسوخ)', '📦', []);
+                        newContainer.parent = targetContainer.id;
+                        Store.registerContainer(newContainer);
+                        targetContainer.addChild(newId);
+                        EventBus.emit('container:created', { name: newContainer.name }); } else if (Store.clipboard.type ===
+                            'tool') { targetContainer.tools.push({ name: Store.clipboard.name + ' (منسوخ)', state: 'idle' }); }
+                        else if (Store.clipboard.type === 'element' || Store.clipboard.type === 'editor') { const elId =
+                                UUID();
+                            Store.registerElement({ id: elId, tag: 'div', html: Store.clipboard.code, depth: 0 });
+                            targetContainer.addElement(elId);
+                            EventBus.emit('element:created', { containerName: targetContainer.name }); }
+                        Store.clipboard = null;
+                        this.clearPending();
+                        history.save();
+                        EventBus.emit('state:changed'); } } },
+                showOnlyPasteButton() { const div = document.getElementById('tool-actions');
+                    div.innerHTML = '';
+                    div.style.display = 'flex'; const pasteBtn = document.createElement('button');
+                    pasteBtn.className = 'act-btn tool-btn';
+                    pasteBtn.textContent = '📍 لصق (تحديد من المرآة)';
+                    pasteBtn.addEventListener('click', () => { if (!Store.clipboard) { alert('⚠️ انسخ شيئاً أولاً'); return; }
+                        div.innerHTML = '';
+                        document.getElementById('pending-msg').textContent = '⌛ المس حاوية في المرآة للصق داخلها...';
+                        Store.pendingAction = 'selectPasteContainer'; });
+                    div.appendChild(pasteBtn); },
+                reassemble() { const sel = Store.selection; if (!sel) { alert('⚠️ المس شيئاً في المرآة أولاً'); return; }
+                    const editor = document.getElementById('editor'); const code = editor?.value; if (!code?.trim()) { alert(
+                            'المحرر فارغ'); return; }
+                    history.save(); if (sel.type === 'container' && sel.containerId) { const c = Store.containers.get(sel
+                        .containerId); if (c) { const safeCode = sanitizeHTML(code); const tmp = document.createElement(
+                                'div');
+                            tmp.innerHTML = safeCode; const newDiv = tmp.querySelector('[data-container-id]'); if (newDiv) { const
+                                    newName = newDiv.querySelector('strong')?.textContent || c.name; const newIcon = newDiv
+                                    .querySelector('span')?.textContent || c.icon;
+                                c.name = newName;
+                                c.icon = newIcon; }
+                            EventBus.emit('code:injected', { name: c.name }); } } else if (sel.type === 'tool' && sel
+                        .containerId && sel.toolIndex !== null) { const c = Store.containers.get(sel.containerId); if (c && c
+                            .tools[sel.toolIndex]) { const safeCode = sanitizeHTML(code); const tmp = document.createElement(
+                                'div');
+                            tmp.innerHTML = safeCode; const newTool = tmp.querySelector('.mini-tool, span'); if (newTool) c
+                                .tools[sel.toolIndex].name = newTool.textContent?.replace('⚙️ ', '') || c.tools[sel
+                                    .toolIndex].name;
+                            EventBus.emit('code:injected', { name: c.tools[sel.toolIndex].name }); } } else if (sel.type ===
+                        'element' && sel.elementId) { const el = Store.elements.get(sel.elementId); if (el) { el.html =
+                                sanitizeHTML(code);
+                            EventBus.emit('code:injected', { name: el.tag }); } } else if (sel.type === 'editor') { EventBus
+                            .emit('code:injected', { name: 'المحرر' }); } else if (sel.type === 'create-code' && sel
+                        .containerId) { const c = Store.containers.get(sel.containerId); if (c) { const elId = UUID();
+                            const safeCode = sanitizeHTML(code);
+                            Store.registerElement({ id: elId, tag: 'div', html: safeCode, depth: 0 });
+                            c.addElement(elId);
+                            EventBus.emit('element:created', { containerName: c.name });
+                            editor.value = '';
+                            Store.mirrorEditorContent = '';
+                            Store.selection = { type: 'container', containerId: sel.containerId };
+                            document.getElementById('editor-info').innerHTML =
+                                `📦 حاوية: <b style="color:#00aaff;">${c.name}</b>`;
+                            document.getElementById('selected-info').textContent = `${c.name} (حاوية)`; } }
+                    Store.mirrorEditorContent = editor.value;
+                    EventBus.emit('state:changed'); },
+                async loadFile() { const filePath = prompt('مسار الملف:', Store.currentFilePath ||
+                        'public/index.html'); if (!filePath) return;
+                    Store.currentFilePath = filePath; const content = await ServerAPI.readFile(filePath); if (content !==
+                        null) { document.getElementById('editor').value = content;
+                        Store.mirrorEditorContent = content;
+                        document.getElementById('editor-info').innerHTML =
+                            `📂 ملف: <b style="color:#00aaff;">${filePath}</b>`;
+                        EventBus.emit('state:changed'); } else { alert('❌ فشل في قراءة الملف. تأكد أن السيرفر يعمل.'); } },
+                async saveFile() { const filePath = prompt('مسار الحفظ:', Store.currentFilePath ||
+                        'public/index.html'); if (!filePath) return; const content = document.getElementById('editor')
+                        .value; const success = await ServerAPI.writeFile(filePath, content); if (success) { Store
+                        .currentFilePath = filePath; } else { alert('❌ فشل في حفظ الملف. تأكد أن السيرفر يعمل.'); } },
+                async refreshTree() { const section = document.getElementById('file-tree-section'); const treeDiv = document
+                        .getElementById('file-tree'); if (!section || !treeDiv) return;
+                    section.style.display = 'block';
+                    treeDiv.innerHTML = '<div style="color:#888;">⏳ جاري تحميل الشجرة...</div>'; const tree = await ServerAPI
+                        .getTree('.'); if (!tree || tree.length === 0) { treeDiv.innerHTML =
+                            '<div style="color:#ff4444;">❌ لا يمكن الاتصال بالسيرفر. تأكد أن السيرفر يعمل على المنفذ 3000.</div>'; return; }
+                    const folders = tree.filter(i => i.type === 'folder'); const files = tree.filter(i => i.type ===
+                        'file'); const sorted = [...folders, ...files];
+                    treeDiv.innerHTML = sorted.map(item => { const icon = item.type === 'folder' ? '📁' : '📄'; const cls =
+                            item.type === 'folder' ? 'folder' : ''; return `<div class="tree-item ${cls}" data-name="${item.name}" data-type="${item.type}">${icon} ${item.name}</div>`; })
+                        .join('');
+                    treeDiv.querySelectorAll('.tree-item').forEach(el => { el.addEventListener('click', () => { const name =
+                                el.dataset.name; const type = el.dataset.type; if (type === 'folder') { Services
+                                .loadFolder(name); } else { Services.loadFileFromTree(name); } }); }); },
+                async loadFolder(folderName) { const tree = await ServerAPI.getTree(folderName); if (!tree || tree.length ===
+                        0) return; const treeDiv = document.getElementById('file-tree'); if (!treeDiv) return; const folders =
+                        tree.filter(i => i.type === 'folder'); const files = tree.filter(i => i.type === 'file'); const sorted =
+                        [...folders, ...files];
+                    treeDiv.innerHTML =
+                        `<div class="tree-item folder" data-name=".." data-type="parent" style="color:var(--conscious);">📁 .. (العودة)</div>` +
+                        sorted.map(item => { const icon = item.type === 'folder' ? '📁' : '📄'; const cls = item.type ===
+                                'folder' ? 'folder' : ''; const fullPath = folderName + '/' + item.name; return `<div class="tree-item ${cls}" data-name="${fullPath}" data-type="${item.type}">${icon} ${item.name}</div>`; })
+                        .join('');
+                    treeDiv.querySelectorAll('.tree-item').forEach(el => { el.addEventListener('click', () => { const name =
+                                el.dataset.name; const type = el.dataset.type; if (type === 'parent') { const parent =
+                                    folderName.substring(0, folderName.lastIndexOf('/')) || '.';
+                                Services.loadFolder(parent); } else if (type === 'folder') { Services.loadFolder(
+                                name); } else { Services.loadFileFromTree(name); } }); }); },
+                async loadFileFromTree(filePath) { const content = await ServerAPI.readFile(filePath); if (content !==
+                    null) { Store.currentFilePath = filePath;
+                        document.getElementById('editor').value = content;
+                        Store.mirrorEditorContent = content;
+                        document.getElementById('editor-info').innerHTML =
+                            `📂 ملف: <b style="color:#00aaff;">${filePath}</b>`;
+                        EventBus.emit('state:changed'); } },
+                async restartServer() { if (!confirm('⚠️ إعادة تشغيل السيرفر؟')) return; const success = await ServerAPI
+                    .restart(); if (success) { setTimeout(async () => { const status = await ServerAPI.checkStatus(); if (
+                            status) EventBus.emit('state:changed'); }, 2000); } },
+                editMirror() { Store.selection = { type: 'mirror' }; const editor = document.getElementById('editor');
+                    editor.value = Renderers.mirrorHTML();
+                    Store.mirrorEditorContent = editor.value;
+                    document.getElementById('editor-info').innerHTML = `🪞 <b style="color:#ffaa00;">المرآة نفسها</b>`;
+                    this.clearPending();
+                    EventBus.emit('state:changed'); },
+                importCode() { const code = prompt('أدخل كود HTML:', '<div><h1>مرحباً</h1></div>'); if (!code) return;
+                    history.save(); const safeCode = sanitizeHTML(code); const tmp = document.createElement('div');
+                    tmp.innerHTML = safeCode; const createC = Store.containers.get('cnt-create');
+                    Array.from(tmp.children).forEach((child, i) => { const id = UUID();
+                        Store.registerElement({ id, tag: child.tagName, html: child.outerHTML }); if (createC)
+                            createC.addElement(id); });
+                    EventBus.emit('state:changed'); },
+                deleteSelected() { const sel = Store.selection; if (!sel) { alert('⚠️ المس شيئاً في المرآة أولاً'); return; }
+                    history.save(); if (sel.type === 'container' && sel.containerId) { const c = Store.containers.get(sel
+                        .containerId); const name = c?.name || '';
+                        Store.removeContainer(sel.containerId);
+                        EventBus.emit('container:deleted', { name }); } else if (sel.type === 'tool' && sel.containerId && sel
+                        .toolIndex !== null) { const c = Store.containers.get(sel.containerId); if (c) { c.tools.splice(sel
+                            .toolIndex, 1); } } else if (sel.type === 'element' && sel.elementId) { const el = Store.elements
+                        .get(sel.elementId); if (el) { Store.containers.forEach(c => c.removeElement(sel.elementId));
+                            Store.removeElement(sel.elementId); } }
+                    Store.selection = null;
+                    document.getElementById('editor').value = '';
+                    Store.mirrorEditorContent = '';
+                    document.getElementById('editor-info').innerHTML = 'المحدد: —';
+                    document.getElementById('selected-info').textContent = '⏳ المس شيئاً في المرآة...';
+                    this.clearPending();
+                    EventBus.emit('state:changed'); },
+                undo() { if (history.undo()) { Store.selection = null;
+                        document.getElementById('editor').value = '';
+                        Store.mirrorEditorContent = '';
+                        document.getElementById('editor-info').innerHTML = 'المحدد: —';
+                        document.getElementById('selected-info').textContent = '⏳ المس شيئاً في المرآة...';
+                        this.clearPending();
+                        EventBus.emit('state:changed'); } },
+                redo() { if (history.redo()) { Store.selection = null;
+                        document.getElementById('editor').value = '';
+                        Store.mirrorEditorContent = '';
+                        document.getElementById('editor-info').innerHTML = 'المحدد: —';
+                        document.getElementById('selected-info').textContent = '⏳ المس شيئاً في المرآة...';
+                        this.clearPending();
+                        EventBus.emit('state:changed'); } },
+                updateToolActions(container) { const div = document.getElementById('tool-actions');
+                    div.innerHTML = '';
+                    div.style.display = 'flex';
+                    document.getElementById('pending-msg').textContent = '';
+                    Store.pendingAction = null; if (container.id === 'cnt-create') { const btn = document.createElement(
+                            'button');
+                        btn.className = 'act-btn tool-btn';
+                        btn.textContent = '📍 تحديد حاوية للخلق';
+                        btn.addEventListener('click', () => { div.innerHTML = '';
+                            document.getElementById('pending-msg').textContent =
+                                '⌛ المس حاوية في المرآة لوضع الكود الجديد داخلها...';
+                            Store.pendingAction = 'selectCreateContainer'; });
+                        div.appendChild(btn); return; } if (container.id === 'cnt-init') { const btn1 = document.createElement(
+                            'button');
+                        btn1.className = 'act-btn tool-btn';
+                        btn1.textContent = '🗄️ توليد حاوية مباشرة';
+                        btn1.addEventListener('click', () => { const n = prompt('اسم الحاوية الجديدة:', 'حاوية جديدة'); if (
+                                n) { const id = UUID();
+                                Store.registerContainer(new Container(id, n, '📦', []));
+                                EventBus.emit('container:created', { name: n });
+                                Services.clearPending();
+                                history.save();
+                                EventBus.emit('state:changed'); } });
+                        div.appendChild(btn1); const btn2 = document.createElement('button');
+                        btn2.className = 'act-btn tool-btn';
+                        btn2.textContent = '📍 تحديد حاوية أم';
+                        btn2.addEventListener('click', () => { div.innerHTML = '';
+                            document.getElementById('pending-msg').textContent =
+                                '⌛ المس حاوية في المرآة لتكون الحاوية الأم...';
+                            Store.pendingAction = 'selectParentContainer'; });
+                        div.appendChild(btn2); return; } if (container.id === 'cnt-generate') { const copyBtn = document
+                        .createElement('button');
+                        copyBtn.className = 'act-btn tool-btn';
+                        copyBtn.textContent = '📍 نسخ (تحديد أي شيء من المرآة)';
+                        copyBtn.addEventListener('click', () => { div.innerHTML = '';
+                            document.getElementById('pending-msg').textContent = '⌛ المس أي شيء في المرآة لنسخه...';
+                            Store.pendingAction = 'selectCopyTarget'; });
+                        div.appendChild(copyBtn); if (Store.clipboard) Services.showOnlyPasteButton(); return; }
+                    container.tools.forEach((tool, idx) => { const btn = document.createElement('button');
+                        btn.className = 'act-btn tool-btn';
+                        btn.textContent = `⚙️ ${tool.name}`;
+                        btn.addEventListener('click', () => { if (!Store.selection) { alert(
+                                    '⚠️ المس شيئاً في المرآة أولاً'); return; }
+                            history.save(); if (Store.selection.type === 'container' && Store.selection.containerId) { const
+                                    c = Store.containers.get(Store.selection.containerId); if (c) { c.state =
+                                        'working'; if (c.tools[idx]) c.tools[idx].state = 'working';
+                                    EventBus.emit('state:changed');
+                                    setTimeout(() => { c.state = 'ready'; if (c.tools[idx]) c.tools[idx].state =
+                                            'done';
+                                        EventBus.emit('state:changed'); }, 1500); } } });
+                        div.appendChild(btn); });
+                }
+            };
+
+            // ╔══════════════════════════════════════════════════════════════╗
+            // ║                      INITIALIZATION                         ║
+            // ╚══════════════════════════════════════════════════════════════╝
+
+            const mapObjects = new Container(UUID(), 'الكائنات', '🧱', []);
+            mapObjects.kind = 'objects';
+            const mapReactor = new Container(UUID(), 'المفاعل', '⚡', []);
+            mapReactor.kind = 'reactor';
+            const mapData = new Container(UUID(), 'البيانات', '📊', []);
+            mapData.kind = 'data';
+
+            const digitalObjects = new Container(UUID(), 'رقمية', '💻', []);
+            digitalObjects.kind = 'objects';
+            digitalObjects.parent = mapObjects.id;
+            mapObjects.addChild(digitalObjects.id);
+            const realObjects = new Container(UUID(), 'حقيقية', '🌍', []);
+            realObjects.kind = 'objects';
+            realObjects.parent = mapObjects.id;
+            mapObjects.addChild(realObjects.id);
+            const userEntity = new Container(UUID(), 'مستخدم', '👤', []);
+            userEntity.kind = 'objects';
+            userEntity.parent = realObjects.id;
+            realObjects.addChild(userEntity.id);
+            const deviceEntity = new Container(UUID(), 'جهاز', '💻', []);
+            deviceEntity.kind = 'objects';
+            deviceEntity.parent = realObjects.id;
+            realObjects.addChild(deviceEntity.id);
+            const spacetimeEntity = new Container(UUID(), 'زمكان', '🌍', []);
+            spacetimeEntity.kind = 'objects';
+            spacetimeEntity.parent = realObjects.id;
+            realObjects.addChild(spacetimeEntity.id);
+
+            const containers = [
+                new Container('cnt-init', 'التهيئة', '🗄️', [{ name: 'تنظيف', state: 'idle' }, { name: 'عزل', state: 'idle' },
+                    { name: 'تسجيل', state: 'idle' }
+                ]),
+                new Container('cnt-generate', 'التوليد', '🔧', [{ name: 'نسخ', state: 'idle' }, { name: 'تحديد المكان',
+                    state: 'idle' }, { name: 'إصدار إذن', state: 'idle' }]),
+                new Container('cnt-create', 'الخلق', '⚙️', [{ name: 'كتابة كود', state: 'idle' }, { name: 'تنسيق',
+                    state: 'idle' }, { name: 'تحضير', state: 'idle' }]),
+                new Container('cnt-process', 'المعالجة', '🔄', [{ name: 'تفكيك', state: 'idle' }, { name: 'فحص',
+                    state: 'idle' }, { name: 'تحليل', state: 'idle' }]),
+                new Container('cnt-modify', 'التعديل', '✏️', [{ name: 'تحرير', state: 'idle' }, { name: 'تحديث',
+                    state: 'idle' }, { name: 'مقارنة', state: 'idle' }]),
+                new Container('cnt-install', 'التثبيت والإعادة', '📥', [{ name: 'استقبال', state: 'idle' }, { name: 'معاينة',
+                    state: 'idle' }, { name: 'حقن', state: 'idle' }])
+            ];
+            containers.forEach(c => { c.parent = digitalObjects.id;
+                digitalObjects.addChild(c.id); });
+
+            const reactorHuman = new Container(UUID(), 'بشري', '👆', []);
+            reactorHuman.kind = 'reactor';
+            reactorHuman.parent = mapReactor.id;
+            mapReactor.addChild(reactorHuman.id);
+            const reactorSoftware = new Container(UUID(), 'برمجي', '⚙️', [{ name: 'Services', state: 'ready' }, { name: 'Renderers',
+                    state: 'ready' }, { name: 'Events', state: 'ready' }
+            ]);
+            reactorSoftware.kind = 'reactor';
+            reactorSoftware.parent = mapReactor.id;
+            mapReactor.addChild(reactorSoftware.id);
+            const reactorPhysical = new Container(UUID(), 'مادي', '🖥️', []);
+            reactorPhysical.kind = 'reactor';
+            reactorPhysical.parent = mapReactor.id;
+            mapReactor.addChild(reactorPhysical.id);
+
+            const dataRaw = new Container(UUID(), 'بيانات خام', '📋', [{ name: 'Registry', state: 'ready' }, { name: 'State',
+                    state: 'ready' }, { name: 'Witness', state: 'ready' }
+            ]);
+            dataRaw.kind = 'data';
+            dataRaw.parent = mapData.id;
+            mapData.addChild(dataRaw.id);
+            const dataMeta = new Container(UUID(), 'بيانات وصفية', '📝', []);
+            dataMeta.kind = 'data';
+            dataMeta.parent = mapData.id;
+            mapData.addChild(dataMeta.id);
+            const dataAnalytics = new Container(UUID(), 'بيانات تحليلية', '📊', []);
+            dataAnalytics.kind = 'data';
+            dataAnalytics.parent = mapData.id;
+            mapData.addChild(dataAnalytics.id);
+
+            const allContainers = [mapObjects, mapReactor, mapData, digitalObjects, realObjects, userEntity,
+                deviceEntity, spacetimeEntity, reactorHuman, reactorSoftware, reactorPhysical, dataRaw, dataMeta,
+                dataAnalytics, ...containers
+            ];
+            allContainers.forEach(c => { c.init();
+                c.mount();
+                Store.registerContainer(c); });
+            containers.forEach((c, i) => { c.connect(containers[(i - 1 + 6) % 6].id, containers[(i + 1) % 6].id); });
+
+            Witness.init();
+            Renderers.init();
+            Services.init();
+
+            document.getElementById('main-actions').addEventListener('click', (e) => { const btn = e.target.closest(
+                    '.act-btn'); if (!btn) return; const containerId = btn.dataset.container; if (containerId) { const
+                    container = Store.containers.get(containerId); if (container) Services.updateToolActions(
+                    container); } });
+            document.getElementById('actions-2').addEventListener('click', (e) => { const btn = e.target.closest('.act-btn'); if (
+                    !btn) return; const action = btn.dataset.action; if (action === 'replace') { if (!Store.selection) alert(
+                        '⚠️ المس شيئاً في المرآة أولاً'); else { history.save();
+                    EventBus.emit('state:changed'); } } else if (action === 'delete') { Services.deleteSelected(); } });
+            document.getElementById('import-btn').addEventListener('click', Services.importCode);
+            document.getElementById('reassemble-btn').addEventListener('click', Services.reassemble);
+            document.getElementById('btn-edit-mirror').addEventListener('click', Services.editMirror);
+            document.getElementById('btn-undo').addEventListener('click', Services.undo);
+            document.getElementById('btn-redo').addEventListener('click', Services.redo);
+            document.getElementById('btn-storage').addEventListener('click', () => { const p = document.getElementById(
+                    'storage-panel');
+                p.style.display = p.style.display === 'none' ? 'block' : 'none';
+                storage.render(); });
+            document.getElementById('btn-save-snippet').addEventListener('click', () => { const code = document.getElementById(
+                    'editor').value; if (code) { const name = prompt('اسم القطعة:'); if (name) { storage.save(name,
+                        code);
+                    storage.render(); } } });
+            document.getElementById('editor').addEventListener('input', () => { Store.mirrorEditorContent = document
+                    .getElementById('editor').value; });
+            document.getElementById('btn-load-file').addEventListener('click', Services.loadFile);
+            document.getElementById('btn-save-file').addEventListener('click', Services.saveFile);
+            document.getElementById('btn-refresh-tree').addEventListener('click', Services.refreshTree);
+            document.getElementById('btn-restart').addEventListener('click', Services.restartServer);
+
+            history.save();
+            Renderers.updateAll();
+            history.updateButtons();
+
+            ServerAPI.checkStatus().then(status => { if (status) { document.getElementById('server-status').classList.add(
+                    'online'); } });
+        })();
+    </script>
+</body>
+</html>
