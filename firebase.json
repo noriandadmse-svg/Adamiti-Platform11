@@ -1,10 +1,22 @@
 {
   "hosting": {
-    "public": "src",
+    "public": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "**/.gitkeep",
+      "setup-structure.sh"
+    ],
+    "rewrites": [
+      {
+        "source": "/app/**",
+        "destination": "/bridge/v11/legacy/index.html"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
     ]
   }
 }
