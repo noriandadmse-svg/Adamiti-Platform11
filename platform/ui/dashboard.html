@@ -16,7 +16,27 @@
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey:            "YOUR_API_KEY",
+      apiKey:            "// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBAi93kthDWgqgilPy-dua56_Sqcbbk-qo",
+  authDomain: "adamitii.firebaseapp.com",
+  projectId: "adamitii",
+  storageBucket: "adamitii.firebasestorage.app",
+  messagingSenderId: "782842731600",
+  appId: "1:782842731600:web:3793e8c0131eafd48e8555",
+  measurementId: "G-N0GC988RFY"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);",
       authDomain:        "adamitii.firebaseapp.com",
       projectId:         "adamitii",
       storageBucket:     "adamitii.appspot.com",
