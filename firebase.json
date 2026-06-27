@@ -67,3 +67,6 @@
     "indexes": "firestore.indexes.json"
   }
 }
+{ "source": "/profile", "destination": "/platform/ui/profile.html" }
+{ "source": "/services", "destination": "/platform/ui/services.html" }
+}
