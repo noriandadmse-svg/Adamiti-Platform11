@@ -1,4 +1,5 @@
- "hosting": {
+{
+  "hosting": {
     "public": ".",
     "ignore": [
       "firebase.json",
@@ -24,34 +25,21 @@
       "modules/**"
     ],
     "rewrites": [
-      {
-        "source": "/auth",
-        "destination": "/platform/auth/auth.html"
-      },
-      {
-        "source": "/dashboard",
-        "destination": "/platform/ui/dashboard.html"
-      },
-      {
-        "source": "/app",
-        "destination": "/bridge/v11/legacy/index.html"
-      },
-      {
-        "source": "/app/**",
-        "destination": "/bridge/v11/legacy/index.html"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
+      { "source": "/auth",      "destination": "/platform/auth/auth.html" },
+      { "source": "/dashboard", "destination": "/platform/ui/dashboard.html" },
+      { "source": "/profile",   "destination": "/platform/ui/profile.html" },
+      { "source": "/services",  "destination": "/platform/ui/services.html" },
+      { "source": "/app",       "destination": "/bridge/v11/legacy/index.html" },
+      { "source": "/app/**",    "destination": "/bridge/v11/legacy/index.html" },
+      { "source": "**",         "destination": "/index.html" }
     ],
     "headers": [
       {
         "source": "**/*.html",
         "headers": [
-          { "key": "X-Frame-Options",        "value": "DENY" },
-          { "key": "X-Content-Type-Options",  "value": "nosniff" },
-          { "key": "Referrer-Policy",         "value": "strict-origin-when-cross-origin" }
+          { "key": "X-Frame-Options",       "value": "DENY" },
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "Referrer-Policy",        "value": "strict-origin-when-cross-origin" }
         ]
       },
       {
@@ -66,7 +54,4 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   }
-
-{ "source": "/profile", "destination": "/platform/ui/profile.html" }
-{ "source": "/services", "destination": "/platform/ui/services.html" }
-
+}
