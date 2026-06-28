@@ -3,66 +3,30 @@
     "public": ".",
     "ignore": [
       "firebase.json",
-      ".firebaserc",
-      "firestore.rules",
-      "firestore.indexes.json",
-      "setup-structure.sh",
       "**/.*",
-      "**/.gitkeep",
-      "**/node_modules/**",
-      "functions/**",
-      "tests/**",
-      "docs/**",
-      "core/**",
-      "runtime/**",
-      "governance/**",
-      "bridge/v30/**",
-      "bridge/transition/**",
-      "bridge/synchronization/**",
-      "bridge/trust/**",
-      "worlds/**",
-      "tools/**",
-      "modules/**"
-    ],
-    "rewrites": [
-      { "source": "/auth",      "destination": "/platform/auth/auth.html" },
-      { "source": "/dashboard", "destination": "/platform/ui/dashboard.html" },
-      { "source": "/profile",   "destination": "/platform/ui/profile.html" },
-      { "source": "/services",  "destination": "/platform/ui/services.html" },
-      { "source": "/app",       "destination": "/bridge/v11/legacy/index.html" },
-      { "source": "/app/**",    "destination": "/bridge/v11/legacy/index.html" },
-      { "source": "**",         "destination": "/index.html" }
+      "/node_modules/"
     ],
     "headers": [
       {
-        "source": "**/*.html",
+        "source": "**/*.@(js|css|html)",
         "headers": [
-          { "key": "X-Frame-Options",       "value": "DENY" },
-          { "key": "X-Content-Type-Options", "value": "nosniff" },
-          { "key": "Referrer-Policy",        "value": "strict-origin-when-cross-origin" }
-        ]
-      },
-      {
-        "source": "**/*.@(js|css)",
-        "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=31536000" }
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000"
+          }
         ]
       }
-      
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
     ]
   },
+
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
-  }
-}
-{
-  "hosting": {
-    "public": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "/node_modules/"
-    ]
   }
 }
