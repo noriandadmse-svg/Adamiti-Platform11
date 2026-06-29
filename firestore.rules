@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── دوال مساعدة ──
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    function cellRole(cellId) {
+      return get(/databases/$(database)/documents/cells/$(cellId)).data.members[request.auth.uid];
+    }
+
+    function hasCellRole(cellId, role) {
+      return isAuth() && cellRole(cellId) == role;
+    }
+
+    function canReadCell(cellId) {
+      return isAuth() && cellRole(cellId) in ['owner', 'editor', 'viewer'];
+    }
+
+    function canWriteCell(cellId) {
+      return isAuth() && cellRole(cellId) in ['owner', 'editor'];
+    }
+
+    function canManageCell(cellId) {
+      return hasCellRole(cellId, 'owner');
+    }
+
+    // ── المستخدمون ──
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ── الخدمات ──
+    match /services/{serviceId} {
+      allow read: if true;
+      allow create: if isAuth() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isAuth() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // ── المشاريع ──
+    match /projects/{projectId} {
+      allow read: if resource.data.status == 'approved'
+                  || (isAuth() && resource.data.ownerId == request.auth.uid);
+      allow create: if isAuth() && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isAuth()
+                    && resource.data.ownerId == request.auth.uid
+                    && request.resource.data.status == resource.data.status;
+      allow delete: if isAuth() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // ── الخلايا (cells) ──
+    match /cells/{cellId} {
+      allow read:   if canReadCell(cellId);
+      allow create: if isAuth()
+                    && request.resource.data.members[request.auth.uid] == 'owner'
+                    && request.resource.data.level in [1, 2, 3];
+      allow update: if canManageCell(cellId);
+      allow delete: if canManageCell(cellId);
+
+      // الحالة والمنطق داخل الخلية
+      match /state/{doc} {
+        allow read:  if canReadCell(cellId);
+        allow write: if canWriteCell(cellId);
+      }
+
+      match /logic/{doc} {
+        allow read:  if canReadCell(cellId);
+        allow write: if canManageCell(cellId);
+      }
+
+      // governance_context — قراءة فقط، يُكتب من النظام
+      match /governance_context/{doc} {
+        allow read:  if canReadCell(cellId);
+        allow write: if false;
+      }
+
+      // الخلايا الفرعية — Level 2 و 3
+      match /children/{childCellId} {
+        allow read:  if canReadCell(cellId);
+        allow write: if canManageCell(cellId);
+      }
+    }
+
+    // ── سجل النشاط ──
+    match /activity/{userId}/logs/{logId} {
+      allow read:  if isOwner(userId);
+      allow write: if false;
+    }
+
+    // ── كل شيء آخر محظور ──
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
