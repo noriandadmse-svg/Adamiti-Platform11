@@ -9,20 +9,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet" />
 
   <script type="module">
+    import { firebaseConfig } from '/platform/config.js';
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey:            "YOUR_API_KEY",
-      authDomain:        "adamitii.firebaseapp.com",
-      projectId:         "adamitii",
-      storageBucket:     "adamitii.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId:             "YOUR_APP_ID"
-    };
 
     const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
