@@ -8,25 +8,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet" />
 
-  <!-- Firebase SDK -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { firebaseConfig }                          from '/platform/config.js';
+    import { buildIdentity, validateIdentity, Roles }  from '/core/identity/index.js';
+
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    // ── ضع إعدادات Firebase الخاصة بك هنا ──
-    const firebaseConfig = {
-      apiKey:            "AIzaSyBAi93kthDWgqgilPy-dua56",
-      authDomain:        "adamitii.firebaseapp.com",
-      projectId:         "adamitii",
-      storageBucket:     "adamitii.firebasestorage.app",
-      messagingSenderId: "782842731600",
-      appId:             "1:782842731600:web:3793e8c0131eafd48e8555",
-      measurementId:     "G-N0GC988RFY"
-    };
-
 
     const app      = initializeApp(firebaseConfig);
     const auth     = getAuth(app);
@@ -45,47 +36,6 @@
       screens[name].classList.add('active');
     }
 
-    // ── تسجيل الدخول بـ Google ──
-    window.signInWithGoogle = async () => {
-      const btn = document.getElementById('btn-google');
-      btn.disabled = true;
-      btn.textContent = 'جارٍ الدخول...';
-      try {
-        // موبايل → redirect، ديسكتوب → popup
-      const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-      if (isMobile) {
-        await signInWithRedirect(auth, provider);
-      } else {
-        await signInWithPopup(auth, provider);
-      }
-      } catch (e) {
-        btn.disabled = false;
-        btn.textContent = 'الدخول عبر Google';
-        showError('حدث خطأ، حاول مرة أخرى.');
-      }
-    };
-
-    // ── اختيار الدور ──
-    window.selectRole = async (role) => {
-      const user = auth.currentUser;
-      if (!user) return;
-      try {
-        await setDoc(doc(db, 'users', user.uid), {
-          role,
-          updatedAt: serverTimestamp()
-        }, { merge: true });
-        document.getElementById('welcome-name').textContent = user.displayName?.split(' ')[0] || 'بك';
-        document.getElementById('welcome-role').textContent = role === 'mufeed' ? 'مفيد' : 'مستفيد';
-        show('welcome');
-      } catch (e) {
-        showError('تعذّر حفظ اختيارك، حاول مرة أخرى.');
-      }
-    };
-
-    // ── تسجيل الخروج ──
-    window.logout = () => signOut(auth);
-
-    // ── خطأ ──
     function showError(msg) {
       const el = document.getElementById('error-msg');
       el.textContent = msg;
@@ -93,20 +43,74 @@
       setTimeout(() => el.style.display = 'none', 4000);
     }
 
+    // ── تسجيل الدخول بـ Google ──
+    window.signInWithGoogle = async () => {
+      const btn = document.getElementById('btn-google');
+      btn.disabled = true;
+      btn.textContent = 'جارٍ الدخول...';
+      try {
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        if (isMobile) {
+          await signInWithRedirect(auth, provider);
+        } else {
+          await signInWithPopup(auth, provider);
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'الدخول عبر Google';
+        showError('حدث خطأ، حاول مرة أخرى.');
+      }
+    };
+
+    // ── اختيار الدور وحفظ الهوية كاملة ──
+    window.selectRole = async (role) => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      try {
+        // بناء الهوية من core/identity/
+        const identity = buildIdentity(user, role);
+
+        // التحقق قبل الحفظ
+        const { valid, errors } = validateIdentity(identity);
+        if (!valid) { showError(errors[0]); return; }
+
+        // الحفظ في Firestore — users/{uid}
+        await setDoc(doc(db, 'users', user.uid), {
+          ...identity,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+
+        // عرض شاشة الترحيب
+        document.getElementById('welcome-name').textContent = user.displayName?.split(' ')[0] || 'بك';
+        document.getElementById('welcome-role').textContent = role === Roles.MUFEED ? 'مفيد' : 'مستفيد';
+        show('welcome');
+
+      } catch (e) {
+        showError('تعذّر حفظ اختيارك، حاول مرة أخرى.');
+        console.error(e);
+      }
+    };
+
+    // ── تسجيل الخروج ──
+    window.logout = () => signOut(auth);
+
     // ── مراقبة حالة المستخدم ──
-    // تحقق من نتيجة redirect عند العودة
     getRedirectResult(auth).catch(() => {});
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { show('login'); return; }
 
-      // هل عنده دور محفوظ؟
       const snap = await getDoc(doc(db, 'users', user.uid));
       if (snap.exists() && snap.data().role) {
-        // مستخدم قديم — أرسله للمنصة مباشرة
+        // مستخدم موجود — تحديث updatedAt فقط
+        await setDoc(doc(db, 'users', user.uid), {
+          updatedAt: serverTimestamp()
+        }, { merge: true });
         window.location.href = '/platform/ui/dashboard.html';
       } else {
-        // مستخدم جديد — اطرح عليه السؤال
+        // مستخدم جديد — اختيار الدور
         document.getElementById('role-name').textContent = user.displayName?.split(' ')[0] || '';
         show('role');
       }
@@ -142,11 +146,9 @@
       justify-content: center;
     }
 
-    /* ── الشاشات ── */
     .screen { display: none; width: 100%; max-width: 420px; padding: 24px; }
     .screen.active { display: block; }
 
-    /* ── البطاقة ── */
     .card {
       background: var(--surface);
       border: 0.5px solid var(--border);
@@ -155,7 +157,6 @@
       text-align: center;
     }
 
-    /* ── الشعار ── */
     .logo-wrap {
       display: flex;
       align-items: center;
@@ -173,11 +174,9 @@
     .logo-name { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
     .logo-name small { font-weight: 300; color: var(--muted); font-size: 13px; margin-right: 5px; }
 
-    /* ── نص ── */
     h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
     .sub { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
 
-    /* ── زر Google ── */
     .btn-google {
       width: 100%;
       display: flex;
@@ -197,9 +196,7 @@
     }
     .btn-google:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-l); }
     .btn-google:disabled { opacity: .5; cursor: default; }
-    .btn-google svg { flex-shrink: 0; }
 
-    /* ── خطأ ── */
     #error-msg {
       display: none;
       margin-top: 14px;
@@ -211,14 +208,8 @@
       color: #b91c1c;
     }
 
-    /* ── فاصل ── */
-    .sep {
-      width: 32px; height: 0.5px;
-      background: var(--border);
-      margin: 24px auto;
-    }
+    .sep { width: 32px; height: 0.5px; background: var(--border); margin: 24px auto; }
 
-    /* ── بطاقات الدور ── */
     .role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
 
     .role-card {
@@ -231,7 +222,6 @@
       transition: border-color .18s, background .18s, box-shadow .18s;
     }
     .role-card:hover { border-color: var(--accent); background: var(--accent-l); box-shadow: 0 0 0 3px var(--accent-l); }
-
     .role-card.green:hover { border-color: var(--green); background: var(--green-l); box-shadow: 0 0 0 3px var(--green-l); }
 
     .role-icon {
@@ -243,11 +233,9 @@
     }
     .role-icon.blue { background: var(--accent-l); }
     .role-icon.green-bg { background: var(--green-l); }
-
     .role-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
     .role-card p  { font-size: 12px; color: var(--muted); line-height: 1.5; }
 
-    /* ── شاشة الترحيب ── */
     .welcome-icon {
       width: 56px; height: 56px;
       border-radius: 16px;
@@ -298,7 +286,7 @@
 </head>
 <body>
 
-  <!-- ── شاشة 1: الدخول ── -->
+  <!-- شاشة ١: الدخول -->
   <div class="screen active" id="screen-login">
     <div class="card">
       <div class="logo-wrap">
@@ -311,10 +299,8 @@
         </div>
         <div class="logo-name">آدميتي <small>Platform</small></div>
       </div>
-
       <h2>أهلاً بك</h2>
       <p class="sub">سجّل دخولك للانضمام إلى منصة آدميتي<br>ومجتمع المفيدين والمستفيدين.</p>
-
       <button class="btn-google" id="btn-google" onclick="signInWithGoogle()">
         <svg width="20" height="20" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -324,15 +310,13 @@
         </svg>
         الدخول عبر Google
       </button>
-
       <div id="error-msg"></div>
-
       <div class="sep"></div>
       <p style="font-size:12px;color:var(--dim)">بالدخول توافق على سياسة الاستخدام والقانون المجتمعي لآدميتي</p>
     </div>
   </div>
 
-  <!-- ── شاشة 2: اختيار الدور ── -->
+  <!-- شاشة ٢: اختيار الدور -->
   <div class="screen" id="screen-role">
     <div class="card">
       <div class="logo-wrap">
@@ -345,10 +329,8 @@
         </div>
         <div class="logo-name">آدميتي <small>Platform</small></div>
       </div>
-
       <h2>مرحباً <span id="role-name"></span> 👋</h2>
       <p class="sub">كيف ستبدأ رحلتك في آدميتي؟<br>يمكنك تغيير دورك لاحقاً في أي وقت.</p>
-
       <div class="role-cards">
         <div class="role-card" onclick="selectRole('mufeed')">
           <div class="role-icon blue">🤝</div>
@@ -364,7 +346,7 @@
     </div>
   </div>
 
-  <!-- ── شاشة 3: الترحيب ── -->
+  <!-- شاشة ٣: الترحيب -->
   <div class="screen" id="screen-welcome">
     <div class="card">
       <div class="welcome-icon">✨</div>
@@ -373,7 +355,7 @@
       <div class="role-badge" id="welcome-role"></div>
       <div class="sep"></div>
       <p class="sub">مرحباً بك <strong id="welcome-name"></strong>،<br>المنصة قيد البناء وستُطلق قريباً.</p>
-      <button class="btn-primary" onclick="window.location.href='/'">العودة للرئيسية</button>
+      <button class="btn-primary" onclick="window.location.href='/platform/ui/dashboard.html'">الذهاب للوحة التحكم</button>
       <button class="btn-link" onclick="logout()">تسجيل الخروج</button>
     </div>
   </div>
