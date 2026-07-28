@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>البوابة المحلية</title>
+  <link rel="stylesheet" href="../../tokens.css">
+</head>
+<body>
+  <h1>البوابة المحلية</h1>
+  <div class="cards">
+    <div id="region-card" class="card">المنطقة: افتراضية</div>
+    <div class="card">المتطلبات المحلية — Placeholder</div>
+    <div class="card">القيود — Placeholder</div>
+    <div class="card">حالة التحقق — Placeholder</div>
+  </div>
+  <div class="actions">
+    <button onclick="location.href='/auth.html'">تسجيل الدخول</button>
+  </div>
+  <script>
+    const ALLOWED_REGIONS = ['ye','sa','ae','kw','qa','bh','om'];
+    const region = new URLSearchParams(location.search).get('region');
+    const safeRegion = ALLOWED_REGIONS.includes(region) ? region : 'default';
+    document.getElementById('region-card').textContent = 'المنطقة: ' + safeRegion;
+  </script>
+</body>
+</html>
