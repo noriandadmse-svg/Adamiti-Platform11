@@ -11,7 +11,7 @@
   firebase.auth().onAuthStateChanged(async (user) => {
     if (!user) {
       const next = encodeURIComponent(location.pathname);
-      location.href = `/auth.html?redirect=${next}`;
+      location.href = `/auth?redirect=${next}`;
       return;
     }
     try {
@@ -19,7 +19,7 @@
       await user.getIdToken(true);
     } catch (e) {
       await firebase.auth().signOut();
-      location.href = '/auth.html';
+      location.href = '/auth';
     }
   });
 })();
