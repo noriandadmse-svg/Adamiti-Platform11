@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>آدميتي — تسجيل الدخول</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html,body { min-height:100%; font-family:'Tajawal',sans-serif; display:flex; align-items:center; justify-content:center; padding:clamp(16px,4vw,48px); background-color:#1c130c; }
+    .leather { width:clamp(280px,92vw,460px); padding:clamp(40px,8vw,56px) clamp(20px,6vw,36px) clamp(24px,4vw,32px); border-radius:18px; position:relative; background-color:#3b2a1f; }
+    .stitch { position:absolute; inset:10px; border-radius:12px; border:1.5px dashed rgba(210,170,120,0.25); pointer-events:none; }
+    .lang-detector { position:absolute; top:16px; left:16px; display:flex; align-items:center; gap:8px; background:rgba(0,0,0,0.25); padding:6px 12px; border-radius:20px; border:1px solid rgba(210,170,120,0.15); }
+    .lang-detector svg { color:#c9a876; width:15px; height:15px; flex-shrink:0; }
+    .lang-detector .txt { display:flex; flex-direction:column; line-height:1.2; }
+    .lang-detector .ar  { font-size:10px; color:#c9a876; }
+    .lang-detector .en  { font-size:8px;  color:#8a7259; }
+
+    .logo-wrap { display:flex; flex-direction:column; align-items:center; margin:20px 0 30px; }
+    .brand-name { font-size:24px; font-weight:700; color:#f5d77f; }
+
+    .login-row { display:flex; justify-content:center; gap:28px; margin-bottom:6px; }
+    .login-opt { display:flex; flex-direction:column; align-items:center; }
+    .login-opt-label { display:flex; flex-direction:column; align-items:center; margin-top:10px; }
+
+    .google-btn { position:relative; width:72px; height:72px; border-radius:50%; background:#4a3526; display:flex; align-items:center; justify-content:center; border:1.5px dashed rgba(210,170,120,0.3); cursor:pointer; }
+    .google-btn .ring { position:absolute; inset:-4px; border-radius:50%; border:2px solid transparent; border-top-color:#c9a876; opacity:0; }
+    .google-btn.loading .ring { opacity:1; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    .qr-patch { width:72px; height:72px; border-radius:14px; background:#4a3526; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+
+    .divider { display:flex; align-items:center; gap:10px; margin:26px 0 16px; }
+    .divider .line { flex:1; height:1px; background:rgba(210,170,120,0.2); }
+    .divider .txt { display:flex; flex-direction:column; align-items:center; }
+
+    .email-row { display:flex; gap:8px; }
+    .email-field { flex:1; padding:13px 16px; border-radius:10px; background:rgba(0,0,0,0.25); color:#f0e6d8; font-size:14px; border:1px solid rgba(210,170,120,0.15); }
+    .email-submit { width:48px; border-radius:10px; border:1.5px dashed rgba(210,170,120,0.3); background:#4a3526; color:#c9a876; cursor:pointer; }
+
+    #error-msg { display:none; margin-top:14px; padding:10px 14px; background:rgba(139,20,20,0.25); border:1px solid rgba(220,100,100,0.35); border-radius:8px; font-size:12px; color:#f5b8b8; text-align:center; }
+
+    .legal-consent { text-align:center; font-size:10.5px; color:#8a7259; line-height:1.7; margin-top:20px; }
+    .legal-consent .legal-link { color:#c9a876; text-decoration:underline; }
+
+    .footer-trust { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:26px; }
+  </style>
+</head>
+<body>
+  <div class="leather">
+    <div class="stitch"></div>
+
+    <div class="lang-detector">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M3 12h18M12 3c2.5 2.7 4 6 4 9s-1.5 6.3-4 9c-2.5-2.7-4-6-4-9s1.5-6.3 4-9z"/>
+      </svg>
+      <div class="txt"><span class="ar" id="lang-detected">...</span><span class="en">Auto-detected</span></div>
+    </div>
+
+    <div class="logo-wrap">
+      <div class="brand-name">آدميتي</div>
+      <div class="brand-sub">Adamiti Platform</div>
+    </div>
+
+    <div class="login-row">
+      <div class="login-opt">
+        <button class="google-btn" id="google-btn" onclick="startLogin()">
+          <span class="ring"></span>
+          <svg width="26" height="26" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+        </button>
+        <div class="login-opt-label" id="google-label"><span class="ar">الدخول عبر جوجل</span><span class="en">LOGIN WITH GOOGLE</span></div>
+      </div>
+
+      <div class="login-opt">
+        <div class="qr-patch" title="مسح سريع — قيد التطوير">
+          <div class="ribbon">قريباً · SOON</div>
+          <svg width="34" height="34" viewBox="0 0 38 38">
+            <g fill="#c9a876" opacity="0.7">
+              <rect x="2" y="2" width="10" height="10"/><rect x="4" y="4" width="6" height="6" fill="#4a3526"/>
+              <rect x="26" y="2" width="10" height="10"/><rect x="28" y="4" width="6" height="6" fill="#4a3526"/>
+              <rect x="2" y="26" width="10" height="10"/><rect x="4" y="28" width="6" height="6" fill="#4a3526"/>
+              <rect x="16" y="2" width="3" height="3"/><rect x="21" y="2" width="3" height="3"/>
+              <rect x="14" y="8" width="3" height="3"/><rect x="20" y="8" width="3" height="3"/>
+              <rect x="16" y="14" width="6" height="6"/><rect x="26" y="16" width="3" height="3"/>
+              <rect x="32" y="16" width="3" height="3"/><rect x="14" y="20" width="3" height="3"/>
+              <rect x="22" y="22" width="3" height="3"/><rect x="28" y="22" width="6" height="3"/>
+              <rect x="16" y="28" width="3" height="3"/><rect x="22" y="30" width="3" height="3"/>
+              <rect x="28" y="30" width="6" height="6"/>
+            </g>
+          </svg>
+        </div>
+        <div class="login-opt-label"><span class="ar">مسح سريع</span><span class="en">QR LOGIN</span></div>
+      </div>
+    </div>
+
+    <div class="divider">
+      <div class="line"></div>
+      <div class="txt"><span class="ar">أو بالبريد الإلكتروني</span><span class="en">OR WITH EMAIL</span></div>
+      <div class="line"></div>
+    </div>
+
+    <div class="email-row">
+      <input class="email-field" type="email" id="email-input" placeholder="name@example.com" />
+      <button class="email-submit" onclick="emailComingSoon()">←</button>
+    </div>
+
+    <div id="error-msg"></div>
+
+    <p class="legal-consent">
+      بالدخول، أنت توافق على
+      <a href="/legal/terms" class="legal-link">سياسة الاستخدام</a>
+      و<a href="/legal/community" class="legal-link">القانون المجتمعي</a>
+      لمنصة ومجتمع آدميتي.
+    </p>
+
+    <div class="footer-trust">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <div class="txt"><span class="ar">آمن • خاص • نحترم خصوصيتك</span><span class="en">SECURE · PRIVATE</span></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { firebaseConfig } from '/platform/config.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const app      = initializeApp(firebaseConfig);
+    const auth     = getAuth(app);
+    const db       = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 5000);
+    }
+
+    window.startLogin = async () => {
+      const btn   = document.getElementById('google-btn');
+      const label = document.getElementById('google-label');
+      if (btn.classList.contains('loading')) return;
+
+      btn.classList.add('loading');
+      label.textContent = 'جارٍ الاتصال بجوجل...';
+
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const snap = await getDoc(doc(db, 'users', result.user.uid));
+        label.textContent = 'تم الدخول ✔';
+        window.location.href = (snap.exists() && snap.data().role) ? '/home' : '/auth';
+      } catch (e) {
+        btn.classList.remove('loading');
+        label.textContent = 'الدخول عبر جوجل';
+        console.error('login error:', e.code, e.message);
+        if (e.code === 'auth/popup-blocked') {
+          try { await signInWithRedirect(auth, provider); }
+          catch (e2) { showError('خطأ: ' + e2.message); }
+        } else if (e.code !== 'auth/popup-closed-by-user') {
+          showError('تعذّر تسجيل الدخول، حاول مجددًا.');
+        }
+      }
+    };
+
+    window.emailComingSoon = () => {
+      showError('الدخول بالبريد الإلكتروني قيد التطوير — استخدم جوجل حاليًا.');
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const detected = (navigator.language || 'ar').slice(0, 2);
+      const names = { ar: 'العربية', en: 'English', fr: 'Français', es: 'Español' };
+      document.getElementById('lang-detected').textContent = names[detected] || detected.toUpperCase();
+    });
+  </script>
+</body>
+</html>
