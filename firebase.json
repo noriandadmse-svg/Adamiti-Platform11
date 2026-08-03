@@ -1,0 +1,88 @@
+{
+  "hosting": {
+    "public": ".",
+
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "firebaserc",
+      "firestore.rules",
+      "firestore.indexes.json",
+      "setup-structure.sh",
+      "download-file.html",
+      "download-file.sh",
+      "**/.env*",
+      "**/.*",
+      "**/.gitkeep",
+      "**/node_modules/**",
+      "functions/**",
+      "tests/**",
+      "docs/**",
+      "runtime/**",
+      "governance/**",
+      "bridge/v30/**",
+      "bridge/transition/**",
+      "bridge/synchronization/**",
+      "bridge/trust/**",
+      "worlds/**",
+      "tools/**",
+      "modules/**",
+      "src/**"
+    ],
+
+    "rewrites": [
+      { "source": "/auth", "destination": "/platform/auth/auth.html" },
+      { "source": "/home", "destination": "/platform/ui/home.html" },
+      { "source": "/map", "destination": "/platform/ui/map.html" },
+      { "source": "/dashboard", "destination": "/platform/ui/dashboard.html" },
+      { "source": "/profile", "destination": "/platform/ui/profile.html" },
+      { "source": "/services", "destination": "/platform/ui/services.html" },
+      { "source": "/app", "destination": "/bridge/v11/legacy/index.html" },
+      { "source": "/app/**", "destination": "/bridge/v11/legacy/index.html" },
+      { "source": "/legal/terms", "destination": "/platform/ui/legal-terms.html" },
+      { "source": "/legal/community", "destination": "/platform/ui/legal-community.html" },
+
+      { "source": "/admin/**", "destination": "/404.html" },
+      { "source": "/wp-admin/**", "destination": "/404.html" },
+      { "source": "/api/**", "destination": "/404.html" },
+
+      { "source": "!/*.*", "destination": "/index.html" }
+    ],
+
+    "headers": [
+      {
+        "source": "**/*.html",
+        "headers": [
+          { "key": "X-Frame-Options", "value": "DENY" },
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'self'; script-src 'self' https://www.gstatic.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.google.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; worker-src 'self';"
+          },
+          { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" },
+          { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+          { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" },
+          { "key": "Cache-Control", "value": "no-store, must-revalidate" }
+        ]
+      },
+      {
+        "source": "**/*.@(js|css)",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=3600" }
+        ]
+      },
+      {
+        "source": "/platform/ui/legal-*.html",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=86400, must-revalidate" }
+        ]
+      }
+    ]
+  },
+
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}
