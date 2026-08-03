@@ -1,0 +1,111 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==========================================================
+    // branches/{branchId}
+    // ==========================================================
+    match /branches/{branchId} {
+      allow get: if isOwnerOrMember(resource.data, request.auth)
+                 && hasReadPermission(resource.data)
+                 && resource.data.lifecycle == 'active';
+
+      allow list: if false;
+
+      allow update: if isOwnerOrMember(resource.data, request.auth)
+                    && hasWritePermission(resource.data)
+                    && resource.data.lifecycle == 'active'
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['title','description','metadata','updatedAt'])
+                    && getAfter(/databases/$(database)/documents/branches/$(branchId))
+                         .data.effectivePermissions == resource.data.effectivePermissions
+                    && getAfter(/databases/$(database)/documents/branches/$(branchId))
+                         .data.lifecycle == resource.data.lifecycle;
+
+      allow delete: if false;
+      allow create: if false;
+    }
+
+    // ==========================================================
+    // branches_queue/{tempId}
+    // ==========================================================
+    match /branches_queue/{tempId} {
+      allow create: if request.auth != null
+                    && request.resource.data.status == 'pending'
+                    && request.resource.data.requestedBy == request.auth.uid
+                    && request.resource.data.retryCount == 0
+                    && request.resource.data.keys().hasOnly(['status','requestedBy','retryCount','request'])
+                    && request.resource.data.request is map
+                    && request.resource.data.request.keys().hasOnly([
+                         'parentId','name','visibility','mode',
+                         'members','memberPermissions','permissions'
+                       ])
+                    && request.resource.data.request.name is string
+                    && request.resource.data.request.name.size() > 0
+                    && request.resource.data.request.name.size() <= 100
+                    && (request.resource.data.request.parentId == null
+                        || (request.resource.data.request.parentId is string
+                            && (request.resource.data.request.parentId == "root"
+                                || exists(/databases/$(database)/documents/branches/$(request.resource.data.request.parentId))))
+                       )
+                    && request.resource.data.request.visibility in ['private','private_group','public']
+                    && request.resource.data.request.mode in ['auto','manual']
+                    && (request.resource.data.request.members == null
+                        || (request.resource.data.request.members is list
+                            && request.resource.data.request.members.size() <= 50))
+                    && (request.resource.data.request.permissions == null
+                        || request.resource.data.request.permissions is list);
+
+      allow get: if request.auth != null
+                 && resource.data.requestedBy == request.auth.uid;
+
+      allow update, delete: if false;
+    }
+
+    // ==========================================================
+    // بطاقة البيانات — تحقق
+    // ==========================================================
+    match /branches/{branchId}/data/{verificationId} {
+      allow read: if isOwnerOrMemberOfBranch(branchId, request.auth)
+                  && getBranch(branchId).lifecycle == 'active';
+      allow write: if false;
+    }
+
+    // ==========================================================
+    // باقي البطاقات — مقفولة
+    // ==========================================================
+    match /branches/{branchId}/{card}/{docId} {
+      allow read, create, update, delete: if false;
+    }
+  }
+}
+
+// === Helper Functions ===
+
+function getBranch(branchId) {
+  return get(/databases/$(database)/documents/branches/$(branchId)).data;
+}
+
+function isOwnerOrMember(branchData, auth) {
+  return auth != null
+    && (branchData.visibility == 'public'
+        || branchData.creatorId == auth.uid
+        || branchData.managerId == auth.uid
+        || (branchData.members is list && branchData.members.hasAny([auth.uid])));
+}
+
+function isOwnerOrMemberOfBranch(branchId, auth) {
+  return isOwnerOrMember(getBranch(branchId), auth);
+}
+
+function hasReadPermission(branchData) {
+  return branchData.effectivePermissions != null
+    && branchData.effectivePermissions.values is list
+    && branchData.effectivePermissions.values.hasAny(['read']);
+}
+
+function hasWritePermission(branchData) {
+  return branchData.effectivePermissions != null
+    && branchData.effectivePermissions.values is list
+    && branchData.effectivePermissions.values.hasAny(['write']);
+}
